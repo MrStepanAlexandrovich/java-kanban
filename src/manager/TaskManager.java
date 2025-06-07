@@ -41,7 +41,6 @@ public class TaskManager {
     //Epics
     public static HashMap<Integer, Epic> getEpics() {
         return epics;
-
     }
 
     public static void clearEpics() {
@@ -68,11 +67,12 @@ public class TaskManager {
 
         ArrayList<Subtask> subtasks = epic.getSubtasks();
         for (Subtask subtask : subtasks) {
-            TaskManager.subtasks.remove(subtask.getId()); //Удаляем из списка в TaskManager
+            TaskManager.subtasks.remove(subtask.getId()); //Удаляем сабтаски эпика из списка в TaskManager
         }
 
         epic.getSubtasks().clear(); //Удаляем сабтаски из объекта
-        epics.remove(hash);
+
+        epics.remove(hash); //Удаляем эпик
     }
 
     public static Epic getEpic(int hash) {
@@ -97,6 +97,7 @@ public class TaskManager {
         subtasks.clear();
         for (Epic epic : epics.values()) {
             epic.getSubtasks().clear();
+            epic.refreshStatus();
         }
     }
 
@@ -106,6 +107,7 @@ public class TaskManager {
         }
         Epic epic = subtask.getEpic();
         epic.getSubtasks().add(subtask);
+        epic.refreshStatus();
     }
 
     public static void removeSubtask(int hash) {
@@ -126,15 +128,4 @@ public class TaskManager {
         subtasks.put(subtask.getId(), subtask);
         removeSubtask(OldSubtaskHash);
     }
-
-
-    /*public static void addSubtaskInEpic(Epic epic, Subtask subtask) {
-        if (epic != null && subtask != null) {
-            ArrayList<Subtask> subtasks = epic.getSubtasks();
-            subtasks.add(subtask);
-            subtask.setEpic(epic);
-            epic.refreshStatus();
-        }
-    }*/
-
 }
