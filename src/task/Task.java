@@ -13,7 +13,7 @@ public class Task {
             this.name = name;
             this.description = description;
             this.status = status;
-            this.id = hashCode(); //нужно проверить правильно ли сгенерируется хэш
+            this.id = hashCode();
         }
     }
 
