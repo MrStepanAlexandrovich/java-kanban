@@ -32,9 +32,9 @@ public class TaskManager {
         return tasks.get(hash);
     }
 
-    public static void updateTask(int OldTaskHash, Task task) {
+    public static void updateTask(int oldTaskHash, Task task) {
         tasks.put(task.getId(), task);
-        tasks.remove(OldTaskHash);
+        tasks.remove(oldTaskHash);
     }
 
 
@@ -88,6 +88,25 @@ public class TaskManager {
         return epic.getSubtasks();
     }
 
+    public static void refreshStatus(Epic epic) {
+        if (epic.getSubtasks().isEmpty()) {
+            epic.setStatus(Status.NEW);
+        } else {
+            ArrayList<Status> subtaskStatusList = new ArrayList<>();
+            for (Subtask subtask : epic.getSubtasks()) {
+                subtaskStatusList.add(subtask.getStatus());
+            }
+
+            if (!subtaskStatusList.contains(Status.DONE) && !subtaskStatusList.contains(Status.IN_PROGRESS)) {
+                epic.setStatus(Status.NEW);
+            } else if (!subtaskStatusList.contains(Status.NEW) && !subtaskStatusList.contains(Status.IN_PROGRESS)) {
+                epic.setStatus(Status.DONE);
+            } else {
+                epic.setStatus(Status.IN_PROGRESS);
+            }
+        }
+    }
+
     //Subtasks
     public static HashMap<Integer, Subtask> getSubtasks() {
         return subtasks;
@@ -97,7 +116,7 @@ public class TaskManager {
         subtasks.clear();
         for (Epic epic : epics.values()) {
             epic.getSubtasks().clear();
-            epic.refreshStatus();
+            refreshStatus(epic);
         }
     }
 
@@ -107,7 +126,7 @@ public class TaskManager {
         }
         Epic epic = subtask.getEpic();
         epic.getSubtasks().add(subtask);
-        epic.refreshStatus();
+        refreshStatus(epic);
     }
 
     public static void removeSubtask(int hash) {
@@ -115,7 +134,7 @@ public class TaskManager {
         Epic epic = subtask.getEpic();
 
         epic.getSubtasks().remove(subtask); //Удаляем из эпика
-        epic.refreshStatus();
+        refreshStatus(epic);
 
         subtasks.remove(hash); //Удаляем из списка
     }
@@ -124,8 +143,8 @@ public class TaskManager {
         return subtasks.get(hash);
     }
 
-    public static void updateSubtask(int OldSubtaskHash, Subtask subtask) {
+    public static void updateSubtask(int oldSubtaskHash, Subtask subtask) {
         subtasks.put(subtask.getId(), subtask);
-        removeSubtask(OldSubtaskHash);
+        removeSubtask(oldSubtaskHash);
     }
 }
