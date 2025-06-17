@@ -1,0 +1,32 @@
+import task.Epic;
+import task.Status;
+import task.Subtask;
+import task.Task;
+
+import java.util.ArrayList;
+
+public class TaskTest {
+    @Test
+    public void EqualTasksShouldBeEqual() {
+        Task task1 = new Task("a", "a", Status.DONE);
+        Task task2 = new Task("a", "a", Status.DONE);
+        assertEquals(task1, task2);
+    }
+
+    @Test
+    public void EqualSubtasksShouldBeEqual() {
+        Epic epic = new Epic("A", "s", new ArrayList<>());
+        Subtask subtask1 = new Subtask("a", "a", Status.DONE, epic);
+        Subtask subtask2 = new Subtask("a", "a", Status.DONE, epic);
+        assertEquals(subtask1, subtask2);
+    }
+
+    @Test
+    public void EqualEpicsShouldBeEqual() {
+        Epic epic1 = new Epic("A", "s", new ArrayList<>());
+        Epic epic2 = new Epic("A", "s", new ArrayList<>());
+        Subtask subtask1 = new Subtask("a", "a", Status.DONE, epic1);
+        Subtask subtask2 = new Subtask("a", "a", Status.DONE, epic2);
+        assertEquals(epic1, epic2);
+    }
+}
