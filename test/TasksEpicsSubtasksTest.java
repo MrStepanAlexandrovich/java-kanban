@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.Status;
 import task.Subtask;
@@ -5,7 +6,9 @@ import task.Task;
 
 import java.util.ArrayList;
 
-public class TaskTest {
+import static org.junit.Assert.assertEquals;
+
+public class TasksEpicsSubtasksTest {
     @Test
     public void EqualTasksShouldBeEqual() {
         Task task1 = new Task("a", "a", Status.DONE);
