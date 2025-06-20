@@ -8,10 +8,10 @@ public class InMemoryTaskManager implements TaskManager{
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private final InMemoryHistoryManager historyManager = (InMemoryHistoryManager) Managers.getDefaultHistory();
+    private final HistoryManager historyManager = Managers.getDefaultHistory();
 
-    public InMemoryHistoryManager getHistoryManager() {
-        return historyManager;
+    public ArrayList<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
     //Tasks
@@ -76,6 +76,7 @@ public class InMemoryTaskManager implements TaskManager{
         for (Subtask subtask : newSubtasks) {
             subtasks.put(subtask.getId(), subtask);    //добавляем сабтаски в список в TaskManager
         }
+        refreshStatus(epic);
     }
 
     @Override
@@ -103,6 +104,7 @@ public class InMemoryTaskManager implements TaskManager{
     public void updateEpic(int oldEpicHash, Epic epic) {
         removeEpic(oldEpicHash);
         addEpic(epic);
+        refreshStatus(epic);
     }
 
     @Override
@@ -174,7 +176,13 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void updateSubtask(int oldSubtaskHash, Subtask subtask) {
-        subtasks.put(subtask.getId(), subtask);
+        addSubtask(subtask);
+
+        Subtask oldSubtask = getSubtask(oldSubtaskHash);
+        Epic epicOfOldSubtask = oldSubtask.getEpic();
+
         removeSubtask(oldSubtaskHash);
+        refreshStatus(epicOfOldSubtask);
+        refreshStatus(subtask.getEpic());
     }
 }

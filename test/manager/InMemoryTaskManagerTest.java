@@ -1,8 +1,6 @@
-import manager.InMemoryTaskManager;
-import manager.Managers;
+package manager;
+
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import task.Epic;
 import task.Status;
