@@ -19,7 +19,7 @@ public class InMemoryHistoryManagerTest {
 
         expectedArrayList.add(new Epic("adsf", null, new ArrayList<>()));
         expectedArrayList.add(new Task("adsfzcx", null, Status.NEW));
-        expectedArrayList.add(new Subtask("sadfas", null,Status.NEW, new Epic("asdfxzv", null, new ArrayList<>())));
+        expectedArrayList.add(new Subtask("sadfas", null, Status.NEW, new Epic("asdfxzv", null, new ArrayList<>())));
 
         historyManager.add(expectedArrayList.get(2));
         historyManager.add(expectedArrayList.get(1));
@@ -53,7 +53,7 @@ public class InMemoryHistoryManagerTest {
 
         Epic epicFromTaskManager = taskManager.getEpic(epic.getId());
         List<Task> history = taskManager.getHistory();
-        Epic epicFromHistoryManager = (Epic)taskManager.getHistory().get(0);
+        Epic epicFromHistoryManager = (Epic) taskManager.getHistory().get(0);
         assertEquals(epicFromHistoryManager, epicFromTaskManager);
     }
 

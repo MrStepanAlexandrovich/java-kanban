@@ -154,7 +154,7 @@ public class InMemoryTaskManagerTest {
         assertEquals(history, expectedArrayList);
     }
 
-  @Test
+    @Test
     public void updatedTasksShouldBeUpdatedInHistoryManager() {
         Task task1 = new Task(String.valueOf(1),
                 String.valueOf(2), Status.NEW);
