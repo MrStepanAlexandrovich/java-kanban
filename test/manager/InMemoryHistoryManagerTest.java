@@ -7,6 +7,7 @@ import task.Subtask;
 import task.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,9 +21,9 @@ public class InMemoryHistoryManagerTest {
         expectedArrayList.add(new Task("adsfzcx", null, Status.NEW));
         expectedArrayList.add(new Subtask("sadfas", null,Status.NEW, new Epic("asdfxzv", null, new ArrayList<>())));
 
-        historyManager.add(expectedArrayList.get(0));
-        historyManager.add(expectedArrayList.get(1));
         historyManager.add(expectedArrayList.get(2));
+        historyManager.add(expectedArrayList.get(1));
+        historyManager.add(expectedArrayList.get(0));
 
         assertEquals(expectedArrayList, historyManager.getHistory());
     }
@@ -51,16 +52,16 @@ public class InMemoryHistoryManagerTest {
         Subtask subtask3 = new Subtask("Умыться", null, Status.NEW, epic);
 
         Epic epicFromTaskManager = taskManager.getEpic(epic.getId());
-        ArrayList<Task> history = taskManager.getHistory();
+        List<Task> history = taskManager.getHistory();
         Epic epicFromHistoryManager = (Epic)taskManager.getHistory().get(0);
         assertEquals(epicFromHistoryManager, epicFromTaskManager);
     }
 
     @Test
-    public void historyManagerShouldContain10Tasks() {
+    public void historyManagerShouldFillWhenGetTask() {
         TaskManager taskManager = Managers.getDefault();
 
-        int expectedHistorySize = 10;
+        int expectedHistorySize = 12;
 
         for (int i = 0; i < 12; i++) {
             taskManager.addTask(new Task(String.valueOf(i), null, Status.NEW));
@@ -70,7 +71,7 @@ public class InMemoryHistoryManagerTest {
             taskManager.getTask(task.getId());
         }
 
-        ArrayList<Task> history = taskManager.getHistory();
+        List<Task> history = taskManager.getHistory();
         assertEquals(expectedHistorySize, history.size());
     }
 }

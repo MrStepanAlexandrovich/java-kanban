@@ -1,25 +1,25 @@
 package manager;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import task.Epic;
-import task.Status;
-import task.Subtask;
-import task.Task;
+import task.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InMemoryTaskManagerTest {
-    static TaskManager taskManager = Managers.getDefault();
+    TaskManager taskManager = Managers.getDefault();
 
     @BeforeEach
-    public void beforeEach() {
+    public void afterEach() {
         taskManager.clearTasks();
         taskManager.clearSubtasks();
         taskManager.clearEpics();
+        taskManager.clearHistory();
     }
 
     @Test
@@ -123,5 +123,122 @@ public class InMemoryTaskManagerTest {
         taskManager.removeTask(task.getId());
 
         assertNull(taskManager.getTask(task.getId()));
+    }
+
+    @Test
+    public void tasksShouldntDuplicateInHistory() {
+        List<Task> expectedArrayList = new ArrayList<>();
+
+        Task task1 = new Task(String.valueOf(1),
+                String.valueOf(2), Status.NEW);
+        Task task2 = new Task(String.valueOf(2),
+                String.valueOf(3), Status.NEW);
+        Task task3 = new Task(String.valueOf(3),
+                String.valueOf(4), Status.NEW);
+
+        expectedArrayList.add(task1);
+        expectedArrayList.add(task3);
+        expectedArrayList.add(task2);
+
+        taskManager.addTask(task1);
+        taskManager.addTask(task2);
+        taskManager.addTask(task3);
+        taskManager.getTask(task1.getId());
+        taskManager.getTask(task2.getId());
+        taskManager.getTask(task2.getId());
+        taskManager.getTask(task3.getId());
+        taskManager.getTask(task1.getId());
+
+        List<Task> history = taskManager.getHistory();
+
+        assertEquals(history, expectedArrayList);
+    }
+
+  @Test
+    public void updatedTasksShouldBeUpdatedInHistoryManager() {
+        Task task1 = new Task(String.valueOf(1),
+                String.valueOf(2), Status.NEW);
+        Task task2 = new Task(String.valueOf(2),
+                String.valueOf(3), Status.NEW);
+        Task task3 = new Task(String.valueOf(3),
+                String.valueOf(4), Status.NEW);
+
+        taskManager.addTask(task1);
+        taskManager.addTask(task2);
+        taskManager.addTask(task3);
+
+        taskManager.getTask(task2.getId());
+        taskManager.getTask(task3.getId());
+        taskManager.getTask(task1.getId());
+        Task task4 = new Task("sadfasdf", "asdfasdf", Status.NEW);
+
+        taskManager.updateTask(task1.getId(), task4);
+        assertEquals(taskManager.getHistory().get(0), task4);
+    }
+
+    @Test
+    public void deletedTaskShouldBeDeletedInHistoryManager() {
+        Task task = new Task("asdfa", "asdasdf", Status.NEW);
+        Epic epic = new Epic("epic", "asdasdf", new ArrayList<>());
+        Subtask subtask = new Subtask("asdfa", "asdasdf", Status.NEW, epic);
+
+        taskManager.addTask(task);
+        taskManager.addEpic(epic);
+
+        taskManager.getEpic(epic.getId());
+        taskManager.getTask(task.getId());
+        taskManager.getSubtask(subtask.getId());
+
+        List<Task> expectedList = new ArrayList<>();
+        expectedList.add(subtask);
+        expectedList.add(task);
+        expectedList.add(epic);
+
+        assertEquals(taskManager.getHistory(), expectedList);
+    }
+
+    @Test
+    public void addSubtaskInHistory() {
+        Epic epic = new Epic("sadfas", "dsasdf", new ArrayList<>());
+        Subtask subtask = new Subtask("asda", "asdfas", Status.NEW, epic);
+        taskManager.addSubtask(subtask);
+        taskManager.getSubtask(subtask.getId());
+
+        assertEquals(taskManager.getHistory().get(0), subtask);
+    }
+
+    @Test
+    public void EpicShouldntContainDeletedSubtask() {
+        Epic epic = new Epic("epic", "asdfasdf", new ArrayList<>());
+        Subtask subtask = new Subtask("adsfa", "aasdfasdf", Status.NEW, epic);
+        taskManager.addEpic(epic);
+
+        assertEquals(taskManager.getEpics().get(epic.getId()).getSubtasks().size(), 1);
+
+        taskManager.removeSubtask(subtask.getId());
+
+        assertEquals(taskManager.getEpics().get(epic.getId()).getSubtasks().size(), 0);
+    }
+
+    @Test
+    public void removingEpicShouldRemoveItsSubtasksFromHistory() {
+        Epic epic = new Epic("epic", "asdfasdf", new ArrayList<>());
+        Subtask subtask1 = new Subtask("subtask1", "asdfas", Status.NEW, epic);
+        Subtask subtask2 = new Subtask("subtask2", "asdfas", Status.NEW, epic);
+        Subtask subtask3 = new Subtask("subtask3", "asdfas", Status.NEW, epic);
+
+        taskManager.addEpic(epic);
+
+        assertEquals(taskManager.getSubtasks().size(), 3);
+
+        taskManager.getSubtask(subtask1.getId());
+        taskManager.getSubtask(subtask2.getId());
+        taskManager.getSubtask(subtask3.getId());
+
+        assertEquals(taskManager.getHistory().size(), 3);
+
+        taskManager.removeEpic(epic.getId());
+
+        assertEquals(taskManager.getHistory().size(), 0);
     }
 }

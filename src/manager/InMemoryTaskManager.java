@@ -2,6 +2,8 @@ package manager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import task.*;
 
 public class InMemoryTaskManager implements TaskManager{
@@ -10,7 +12,7 @@ public class InMemoryTaskManager implements TaskManager{
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return historyManager.getHistory();
     }
 
@@ -34,6 +36,7 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void removeTask(int hash) {
+        historyManager.remove(hash);
         tasks.remove(hash);
     }
 
@@ -48,6 +51,8 @@ public class InMemoryTaskManager implements TaskManager{
     public void updateTask(int oldTaskHash, Task task) {
         tasks.put(task.getId(), task);
         tasks.remove(oldTaskHash);
+
+        historyManager.updateTask(oldTaskHash, task);
     }
 
 
@@ -85,9 +90,11 @@ public class InMemoryTaskManager implements TaskManager{
 
         ArrayList<Subtask> subtasks = epic.getSubtasks();
         for (Subtask subtask : subtasks) {
+            historyManager.remove(subtask.getId());
             this.subtasks.remove(subtask.getId()); //Удаляем сабтаски эпика из списка в TaskManager
         }
 
+        historyManager.remove(hash);
         epic.getSubtasks().clear(); //Удаляем сабтаски из объекта
 
         epics.remove(hash); //Удаляем эпик
@@ -105,6 +112,7 @@ public class InMemoryTaskManager implements TaskManager{
         removeEpic(oldEpicHash);
         addEpic(epic);
         refreshStatus(epic);
+        historyManager.updateTask(oldEpicHash, epic);
     }
 
     @Override
@@ -161,6 +169,7 @@ public class InMemoryTaskManager implements TaskManager{
         Subtask subtask = subtasks.get(hash);
         Epic epic = subtask.getEpic();
 
+        historyManager.remove(hash);
         epic.getSubtasks().remove(subtask); //Удаляем из эпика
         refreshStatus(epic);
 
@@ -184,5 +193,11 @@ public class InMemoryTaskManager implements TaskManager{
         removeSubtask(oldSubtaskHash);
         refreshStatus(epicOfOldSubtask);
         refreshStatus(subtask.getEpic());
+        historyManager.updateTask(oldSubtaskHash, subtask);
+    }
+
+    @Override
+    public void clearHistory() {
+        historyManager.clear();
     }
 }

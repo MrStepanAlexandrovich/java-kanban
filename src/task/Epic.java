@@ -15,4 +15,13 @@ public class Epic extends Task {
     public ArrayList<Subtask> getSubtasks() {
         return subtasks;
     }
+
+    public void addSubtask(Subtask subtask) {
+        subtasks.add(subtask);
+    }
+
+    @Override
+    public int hashCode() {
+        return 8 * super.hashCode();
+    }
 }
