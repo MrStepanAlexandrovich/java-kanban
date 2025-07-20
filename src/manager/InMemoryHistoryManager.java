@@ -20,21 +20,10 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     @Override
-    public void clear() {
-        for (Node node : history.values()) {
-            node.setPrevious(null);
-            node.setData(null);
-            node.setNext(null);
-            node = null;
-        }
-        history.clear();
-    }
-
-    @Override
     public void remove(int id) {
         removeNode(history.get(id));
         history.remove(id);
-        if (history.size() == 0) {
+        if (history.isEmpty()) {
             first = null;
             last = null;
         }
@@ -43,14 +32,6 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public List<Task> getHistory() {
         return getTasks();
-    }
-
-    @Override
-    public void updateTask(int oldTaskId, Task task) {
-        var node = history.get(oldTaskId);
-        node.setData(task);
-        history.put(task.getId(), node);
-        history.remove(oldTaskId);
     }
 
     //Методы связного списка
