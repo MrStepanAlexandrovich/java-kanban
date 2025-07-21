@@ -5,6 +5,7 @@ import task.Subtask;
 import task.Task;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,43 +15,43 @@ public interface TaskManager {
     void clearHistory();
 
     //Tasks
-    HashMap<Integer, Task> getTasks();
+    List<Task> getTasks();
 
     void clearTasks();
 
-    void addTask(Task task);
+    int addTask(Task task);
 
     void removeTask(int hash);
 
     Task getTask(int hash);
 
-    void updateTask(int oldTaskHash, Task task);
+    int updateTask(int oldTaskHash, Task task);
 
     //Epics
-    HashMap<Integer, Epic> getEpics();
+    List<Epic> getEpics();
 
     void clearEpics();
 
-    void addEpic(Epic epic);
+    int addEpic(Epic epic);
 
     void removeEpic(int hash);
 
     Epic getEpic(int hash);
 
-    void updateEpic(int oldEpicHash, Epic epic);
+    int updateEpic(int oldEpicHash, Epic epic);
 
     ArrayList<Subtask> getSubtasksOfEpic(Epic epic);
 
     //Subtasks
-    HashMap<Integer, Subtask> getSubtasks();
+    List<Subtask> getSubtasks();
 
-    void addSubtask(Subtask subtask);
+    int addSubtask(Subtask subtask);
 
     void removeSubtask(int hash);
 
     Subtask getSubtask(int hash);
 
-    void updateSubtask(int oldSubtaskHash, Subtask subtask);
+    int updateSubtask(int oldSubtaskHash, Subtask subtask);
 
     void clearSubtasks();
 }

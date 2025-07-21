@@ -48,7 +48,7 @@ public class InMemoryTaskManagerTest {
         }
 
         int i = 0;
-        for (Epic epic : taskManager.getEpics().values()) {
+        for (Epic epic : taskManager.getEpics()) {
             taskManager.addSubtask(new Subtask(String.valueOf(i), null, Status.NEW, epic));
             i++;
             taskManager.addSubtask(new Subtask(String.valueOf(i), null, Status.NEW, epic));
@@ -68,7 +68,7 @@ public class InMemoryTaskManagerTest {
         }
 
         int i = 0;
-        for (Epic epic : taskManager.getEpics().values()) {
+        for (Epic epic : taskManager.getEpics()) {
             taskManager.addSubtask(new Subtask(String.valueOf(i), null, Status.NEW, epic));
             i++;
             taskManager.addSubtask(new Subtask(String.valueOf(i), null, Status.NEW, epic));
@@ -212,11 +212,11 @@ public class InMemoryTaskManagerTest {
         Subtask subtask = new Subtask("adsfa", "aasdfasdf", Status.NEW, epic);
         taskManager.addEpic(epic);
 
-        assertEquals(taskManager.getEpics().get(epic.getId()).getSubtasks().size(), 1);
+        assertEquals(taskManager.getEpic(epic.getId()).getSubtasks().size(), 1);
 
         taskManager.removeSubtask(subtask.getId());
 
-        assertEquals(taskManager.getEpics().get(epic.getId()).getSubtasks().size(), 0);
+        assertEquals(taskManager.getEpic(epic.getId()).getSubtasks().size(), 0);
     }
 
     @Test

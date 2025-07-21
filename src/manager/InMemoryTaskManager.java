@@ -1,6 +1,7 @@
 package manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,8 +19,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     //Tasks
     @Override
-    public HashMap<Integer, Task> getTasks() {
-        return tasks;
+    public List<Task> getTasks() {
+        return collectionToList(tasks.values());
     }
 
     @Override
@@ -28,10 +29,12 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addTask(Task task) {
+    public int addTask(Task task) {
         if (task != null) {
             tasks.put(task.hashCode(), task);
         }
+
+        return task.getId();
     }
 
     @Override
@@ -48,19 +51,21 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateTask(int oldTaskHash, Task task) {
+    public int updateTask(int oldTaskHash, Task task) {
         tasks.put(task.getId(), task);
         tasks.remove(oldTaskHash);
 
         historyManager.remove(oldTaskHash);
         historyManager.add(task);
+
+        return task.getId();
     }
 
 
     //Epics
     @Override
-    public HashMap<Integer, Epic> getEpics() {
-        return epics;
+    public List<Epic> getEpics() {
+        return collectionToList(epics.values());
     }
 
     @Override
@@ -73,7 +78,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addEpic(Epic epic) {
+    public int addEpic(Epic epic) {
         if (epic != null) {
             epics.put(epic.hashCode(), epic);
         }
@@ -83,6 +88,8 @@ public class InMemoryTaskManager implements TaskManager {
             subtasks.put(subtask.getId(), subtask);    //добавляем сабтаски в список в TaskManager
         }
         refreshStatus(epic);
+
+        return epic.getId();
     }
 
     @Override
@@ -109,7 +116,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateEpic(int oldEpicHash, Epic epic) {
+    public int updateEpic(int oldEpicHash, Epic epic) {
         removeEpic(oldEpicHash);
         List<Subtask> subtasks = getEpic(oldEpicHash).getSubtasks();
         addEpic(epic);
@@ -119,6 +126,8 @@ public class InMemoryTaskManager implements TaskManager {
         refreshStatus(epic);
         historyManager.add(epic);
         historyManager.remove(oldEpicHash);
+
+        return epic.getId();
     }
 
     @Override
@@ -147,8 +156,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     //Subtasks
     @Override
-    public HashMap<Integer, Subtask> getSubtasks() {
-        return subtasks;
+    public List<Subtask> getSubtasks() {
+        return collectionToList(subtasks.values());
     }
 
     @Override
@@ -161,13 +170,15 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addSubtask(Subtask subtask) {
+    public int addSubtask(Subtask subtask) {
         if (subtask != null) {
             subtasks.put(subtask.hashCode(), subtask);
         }
         Epic epic = subtask.getEpic();
         epic.getSubtasks().add(subtask);
         refreshStatus(epic);
+
+        return subtask.getId();
     }
 
     @Override
@@ -190,7 +201,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateSubtask(int oldSubtaskHash, Subtask subtask) {
+    public int updateSubtask(int oldSubtaskHash, Subtask subtask) {
         addSubtask(subtask);
 
         Subtask oldSubtask = getSubtask(oldSubtaskHash);
@@ -203,6 +214,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         historyManager.add(subtask);
         historyManager.remove(oldSubtaskHash);
+
+        return subtask.getId();
     }
 
     @Override
@@ -211,5 +224,11 @@ public class InMemoryTaskManager implements TaskManager {
             int id = task.getId();
             historyManager.remove(id);
         }
+    }
+
+    private <T> List<T> collectionToList(Collection<T> collection) {
+        List<T> list = new ArrayList<>();
+        list.addAll(collection);
+        return list;
     }
 }

@@ -6,6 +6,7 @@ import task.Subtask;
 import task.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -115,5 +116,8 @@ public class Main {
         for (Task task : taskManager.getHistory()) {
             System.out.println(task);
         }
+
+        System.out.println(taskManager.getTasks());
+        System.out.println(taskManager.getEpics());
     }
 }

@@ -67,7 +67,7 @@ public class InMemoryHistoryManagerTest {
             taskManager.addTask(new Task(String.valueOf(i), null, Status.NEW));
         }
 
-        for (Task task : taskManager.getTasks().values()) {
+        for (Task task : taskManager.getTasks()) {
             taskManager.getTask(task.getId());
         }
 
