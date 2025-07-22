@@ -1,3 +1,4 @@
+import manager.FileBackedTaskManager;
 import manager.Managers;
 import manager.TaskManager;
 import task.Epic;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {/*
         Task task1 = new Task("task1", "desc1", Status.NEW);
         Task task2 = new Task("task2", "desc2", Status.NEW);
         Epic epic1 = new Epic("epic1", "desc", new ArrayList<>());
@@ -117,6 +118,10 @@ public class Main {
         }
 
         System.out.println(taskManager.getTasks());
-        System.out.println(taskManager.getEpics());
+        System.out.println(taskManager.getEpics());*/
+
+        FileBackedTaskManager fbtm = new FileBackedTaskManager("backup.txt");
+        fbtm.addTask(new Task("asdfasd", "asdfasfd", Status.DONE));
+        fbtm.addEpic(new Epic("epic", "desc", new ArrayList<>()));
     }
 }
