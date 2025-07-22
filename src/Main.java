@@ -6,7 +6,6 @@ import task.Subtask;
 import task.Task;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
 
