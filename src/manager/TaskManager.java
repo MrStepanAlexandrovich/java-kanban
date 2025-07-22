@@ -5,8 +5,6 @@ import task.Subtask;
 import task.Task;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 public interface TaskManager {
