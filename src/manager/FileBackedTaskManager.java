@@ -41,16 +41,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 "id", "type", "name", "status", "description", "epic");
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.path)) {
             bufferedWriter.write(header);
-            for (Task task : super.getTasks()) {
-                bufferedWriter.write(taskToString(task));
-            }
-
             for (Epic epic : super.getEpics()) {
                 bufferedWriter.write(taskToString(epic));
             }
 
+
             for (Subtask subtask : super.getSubtasks()) {
                 bufferedWriter.write(taskToString(subtask));
+            }
+
+            for (Task task : super.getTasks()) {
+                bufferedWriter.write(taskToString(task));
             }
         } catch (IOException e) {
 

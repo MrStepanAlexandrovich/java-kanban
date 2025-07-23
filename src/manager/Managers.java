@@ -25,13 +25,16 @@ public class Managers {
         try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             bufferedReader.readLine(); //Читаем шапку таблицы
             while (bufferedReader.ready()) {
-                Task task = stringToTask(bufferedReader.readLine(), fileBackedTaskManager);
-                if (task instanceof Epic) {
-                    fileBackedTaskManager.addEpic((Epic) task);
-                } else if (task instanceof Subtask) {
-                    fileBackedTaskManager.addSubtask((Subtask) task);
-                } else if (task instanceof Task) {
-                    fileBackedTaskManager.addTask(task);
+                String string = bufferedReader.readLine();
+                if (!string.isBlank()) {
+                    Task task = stringToTask(string, fileBackedTaskManager);
+                    if (task instanceof Epic) {
+                        fileBackedTaskManager.addEpic((Epic) task);
+                    } else if (task instanceof Subtask) {
+                        fileBackedTaskManager.addSubtask((Subtask) task);
+                    } else if (task instanceof Task) {
+                        fileBackedTaskManager.addTask(task);
+                    }
                 }
             }
         } catch (IOException e) {

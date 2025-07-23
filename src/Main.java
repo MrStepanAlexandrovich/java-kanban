@@ -6,7 +6,11 @@ import task.Status;
 import task.Subtask;
 import task.Task;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
@@ -125,6 +129,9 @@ public class Main {
         File file = Paths.get("backup.txt").toFile();
         TaskManager fbtm = Managers.loadFromFile(file);
 
+        int epicId = fbtm.addEpic(new Epic("Эпический1", "Описание", new ArrayList<>()));
+        fbtm.addSubtask(new Subtask("Сабтаск2", "Надо_делать", Status.NEW, fbtm.getEpic(epicId)));
+        fbtm.addTask(new Task("Задача3", "вот_такая", Status.DONE));
         System.out.println("Epics:");
         for (Epic epic : fbtm.getEpics()) {
             System.out.println(epic);
@@ -141,5 +148,6 @@ public class Main {
         for (Subtask subtask : fbtm.getSubtasks()) {
             System.out.println(subtask);
         }
+
     }
 }
