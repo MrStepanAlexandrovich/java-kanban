@@ -55,4 +55,8 @@ public class Task {
                 ", id=" + id +
                 '}';
     }
+
+    public String getDescription() {
+        return description;
+    }
 }

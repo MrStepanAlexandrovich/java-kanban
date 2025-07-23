@@ -7,29 +7,12 @@ import task.Task;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.stream.Stream;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private Path path;
-    public FileBackedTaskManager(String filename) {
+    public FileBackedTaskManager(Path path) {
         super();
-        this.path = Paths.get(filename);
-    }
-
-    public static void loadFromFile(File file) {
-        try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-            bufferedReader.readLine(); //Читаем шапку таблицы
-            while (bufferedReader.ready()) {
-                Task task = stringToTask(bufferedReader.readLine());
-                if (task instanceof Epic) {
-                    this.addEpic((Epic) task);
-                }
-            }
-        } catch (IOException e) {
-
-        }
+        this.path = path;
     }
 
     @Override
@@ -58,12 +41,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 "id", "type", "name", "status", "description", "epic");
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.path)) {
             bufferedWriter.write(header);
-            for (Task task : super.getTasks()) {
-                bufferedWriter.write(taskToString(task));
-            }
-
             for (Epic epic : super.getEpics()) {
                 bufferedWriter.write(taskToString(epic));
+            }
+
+            for (Task task : super.getTasks()) {
+                bufferedWriter.write(taskToString(task));
             }
 
             for (Subtask subtask : super.getSubtasks()) {
@@ -75,23 +58,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private static String taskToString(Task task) {
-        return String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n", task.getId(),
-                "task", task.getName(), task.getStatus(), null, null);
-    }
-
-    private static Task stringToTask(String string) {
-        String[] strings = string.split(" ");
-        switch (strings[1]) {
-            case "task" -> {
-                return new Task(strings[0], strings[4], null);
-            }
-            case "subtask" -> {
-                new Subtask(strings[0], strings[4], null, null);
-            }
-            case "Epic" -> {
-                return new Epic(strings[0], strings[4], new ArrayList<>());
-            }
+        String string = null;
+        String type;
+        Integer epic;
+        if (task instanceof Epic) {
+            type = "epic";
+            epic = null;
+        } else if (task instanceof Subtask) {
+            type = "subtask";
+            epic = ((Subtask) task).getEpic().getId();
+        } else {
+            type = "task";
+            epic = null;
         }
-        return null;
+        string = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n", task.getId(),
+                type, task.getName(), task.getStatus(), task.getDescription(), epic);
+        return string;
     }
 }

@@ -6,6 +6,8 @@ import task.Status;
 import task.Subtask;
 import task.Task;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class Main {
@@ -120,8 +122,18 @@ public class Main {
         System.out.println(taskManager.getTasks());
         System.out.println(taskManager.getEpics());*/
 
-        FileBackedTaskManager fbtm = new FileBackedTaskManager("backup.txt");
-        fbtm.addTask(new Task("asdfasd", "asdfasfd", Status.DONE));
-        fbtm.addEpic(new Epic("epic", "desc", new ArrayList<>()));
+        File file = Paths.get("backup.txt").toFile();
+        TaskManager fbtm = Managers.loadFromFile(file);
+        for (Epic epic : fbtm.getEpics()) {
+            System.out.println(epic);
+        }
+
+        for (Task task : fbtm.getTasks()) {
+            System.out.println(task);
+        }
+
+        for (Subtask subtask : fbtm.getSubtasks()) {
+            System.out.println(subtask);
+        }
     }
 }
