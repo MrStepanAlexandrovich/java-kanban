@@ -124,14 +124,20 @@ public class Main {
 
         File file = Paths.get("backup.txt").toFile();
         TaskManager fbtm = Managers.loadFromFile(file);
+
+        System.out.println("Epics:");
         for (Epic epic : fbtm.getEpics()) {
             System.out.println(epic);
         }
+        System.out.println();
 
+        System.out.println("Tasks:");
         for (Task task : fbtm.getTasks()) {
             System.out.println(task);
         }
+        System.out.println();
 
+        System.out.println("Subtasks:");
         for (Subtask subtask : fbtm.getSubtasks()) {
             System.out.println(subtask);
         }

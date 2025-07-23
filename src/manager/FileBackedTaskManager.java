@@ -10,9 +10,9 @@ import java.nio.file.Path;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private Path path;
-    public FileBackedTaskManager(Path path) {
+    public FileBackedTaskManager(File file) {
         super();
-        this.path = path;
+        this.path = file.toPath();
     }
 
     @Override
@@ -41,12 +41,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 "id", "type", "name", "status", "description", "epic");
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.path)) {
             bufferedWriter.write(header);
-            for (Epic epic : super.getEpics()) {
-                bufferedWriter.write(taskToString(epic));
-            }
-
             for (Task task : super.getTasks()) {
                 bufferedWriter.write(taskToString(task));
+            }
+
+            for (Epic epic : super.getEpics()) {
+                bufferedWriter.write(taskToString(epic));
             }
 
             for (Subtask subtask : super.getSubtasks()) {
@@ -58,21 +58,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private static String taskToString(Task task) {
-        String string = null;
+        String string;
+        Integer epicId;
         String type;
-        Integer epic;
         if (task instanceof Epic) {
+            epicId = null;
             type = "epic";
-            epic = null;
         } else if (task instanceof Subtask) {
+            epicId = ((Subtask) task).getEpic().getId();
             type = "subtask";
-            epic = ((Subtask) task).getEpic().getId();
         } else {
+            epicId = null;
             type = "task";
-            epic = null;
         }
         string = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n", task.getId(),
-                type, task.getName(), task.getStatus(), task.getDescription(), epic);
+                type, task.getName(), task.getStatus(), task.getDescription(), epicId);
         return string;
     }
 }
