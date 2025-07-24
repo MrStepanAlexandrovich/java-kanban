@@ -18,25 +18,39 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     @Override
     public int addTask(Task task) {
         int id = super.addTask(task);
-        save();
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
         return id;
     }
 
     @Override
     public int addEpic(Epic epic) {
         int id = super.addEpic(epic);
-        save();
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
         return id;
     }
 
     @Override
     public int addSubtask(Subtask subtask) {
         int id = super.addSubtask(subtask);
-        save();
+
+        try {
+            save();
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
+
         return id;
     }
 
-    private void save() {
+    private void save() throws ManagerSaveException {
         String header = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
                 "id", "type", "name", "status", "description", "epic");
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.path)) {
@@ -44,7 +58,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             for (Epic epic : super.getEpics()) {
                 bufferedWriter.write(taskToString(epic));
             }
-
 
             for (Subtask subtask : super.getSubtasks()) {
                 bufferedWriter.write(taskToString(subtask));
@@ -54,7 +67,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 bufferedWriter.write(taskToString(task));
             }
         } catch (IOException e) {
-
+            throw new ManagerSaveException("Ошибка при сохранении в файл!");
         }
     }
 
@@ -75,5 +88,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         string = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n", task.getId(),
                 type, task.getName(), task.getStatus(), task.getDescription(), epicId);
         return string;
+    }
+}
+
+class ManagerSaveException extends Exception {
+    public ManagerSaveException(String message) {
+        super(message);
     }
 }

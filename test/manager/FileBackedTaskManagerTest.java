@@ -19,13 +19,13 @@ public class FileBackedTaskManagerTest {
             "id", "type", "name", "status", "description", "epic");
 
     String task = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
-            "id", "task", "Пройти_обучение", "DONE", "description", "null");
+            "91231241", "task", "Пройти_обучение", "DONE", "description", "null");
 
     String epic = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
             "12310398", "epic", "Уборка", "NEW", "description", "null");
 
     String subtask = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
-            "12310398", "subtask", "Подмести", "NEW", "веником", "-1994460504");
+            "12310398", "subtask", "Подмести", "NEW", "веником", "1784055104");
 
     @BeforeEach
     public void beforeEach() {

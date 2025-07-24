@@ -22,7 +22,7 @@ public class Managers {
 
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
-        try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             bufferedReader.readLine(); //Читаем шапку таблицы
             while (bufferedReader.ready()) {
                 String string = bufferedReader.readLine();
