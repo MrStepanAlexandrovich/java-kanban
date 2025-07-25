@@ -13,7 +13,7 @@ public class Task {
             this.name = name;
             this.description = description;
             this.status = status;
-            this.id = hashCode();
+            this.id = null;
         }
     }
 
@@ -58,5 +58,9 @@ public class Task {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }

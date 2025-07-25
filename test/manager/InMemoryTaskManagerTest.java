@@ -208,15 +208,14 @@ public class InMemoryTaskManagerTest {
 
     @Test
     public void EpicShouldntContainDeletedSubtask() {
-        Epic epic = new Epic("epic", "asdfasdf", new ArrayList<>());
-        Subtask subtask = new Subtask("adsfa", "aasdfasdf", Status.NEW, epic);
-        taskManager.addEpic(epic);
+        int epicId = taskManager.addEpic(new Epic("epic", "asdfasdf", new ArrayList<>()));
+        int subtaskId = taskManager.addSubtask(new Subtask("adsfa", "aasdfasdf", Status.NEW, taskManager.getEpic(epicId)));
 
-        assertEquals(taskManager.getEpic(epic.getId()).getSubtasks().size(), 1);
+        assertEquals(taskManager.getEpic(epicId).getSubtasks().size(), 1);
 
-        taskManager.removeSubtask(subtask.getId());
+        taskManager.removeSubtask(subtaskId);
 
-        assertEquals(taskManager.getEpic(epic.getId()).getSubtasks().size(), 0);
+        assertEquals(taskManager.getEpic(epicId).getSubtasks().size(), 0);
     }
 
     @Test

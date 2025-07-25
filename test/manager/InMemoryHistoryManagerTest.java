@@ -14,18 +14,20 @@ import static org.junit.Assert.assertEquals;
 public class InMemoryHistoryManagerTest {
     @Test
     public void getHistoryShouldReturnListOfTasks() {
-        HistoryManager historyManager = Managers.getDefaultHistory();
-        ArrayList<Task> expectedArrayList = new ArrayList<>();
+        TaskManager taskManager = Managers.getDefault();
 
-        expectedArrayList.add(new Epic("adsf", null, new ArrayList<>()));
-        expectedArrayList.add(new Task("adsfzcx", null, Status.NEW));
-        expectedArrayList.add(new Subtask("sadfas", null, Status.NEW, new Epic("asdfxzv", null, new ArrayList<>())));
+        int idEpic = taskManager.addEpic(new Epic("adsf", null, new ArrayList<>()));
+        int idTask = taskManager.addTask(new Task("adsfzcx", null, Status.NEW));
+        int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW, taskManager.getEpic(idEpic)));
 
-        historyManager.add(expectedArrayList.get(2));
-        historyManager.add(expectedArrayList.get(1));
-        historyManager.add(expectedArrayList.get(0));
+        Epic epic = taskManager.getEpic(idEpic);
+        Task task = taskManager.getTask(idTask);
+        Subtask subtask = taskManager.getSubtask(idSubtask);
 
-        assertEquals(expectedArrayList, historyManager.getHistory());
+        assertEquals(subtask, taskManager.getHistory().get(0));
+        assertEquals(task, taskManager.getHistory().get(1));
+        assertEquals(epic, taskManager.getHistory().get(2));
+        assertEquals(taskManager.getHistory().size(), 3);
     }
 
     @Test

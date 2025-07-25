@@ -19,11 +19,11 @@ public interface TaskManager {
 
     int addTask(Task task);
 
-    void removeTask(int hash);
+    void removeTask(int id);
 
-    Task getTask(int hash);
+    Task getTask(int id);
 
-    int updateTask(int oldTaskHash, Task task);
+    int updateTask(int id, Task task);
 
     //Epics
     List<Epic> getEpics();
@@ -32,11 +32,11 @@ public interface TaskManager {
 
     int addEpic(Epic epic);
 
-    void removeEpic(int hash);
+    void removeEpic(int id);
 
-    Epic getEpic(int hash);
+    Epic getEpic(int id);
 
-    int updateEpic(int oldEpicHash, Epic epic);
+    int updateEpic(int id, Epic epic);
 
     ArrayList<Subtask> getSubtasksOfEpic(Epic epic);
 
@@ -45,11 +45,11 @@ public interface TaskManager {
 
     int addSubtask(Subtask subtask);
 
-    void removeSubtask(int hash);
+    void removeSubtask(int id);
 
-    Subtask getSubtask(int hash);
+    Subtask getSubtask(int id);
 
-    int updateSubtask(int oldSubtaskHash, Subtask subtask);
+    int updateSubtask(int id, Subtask subtask);
 
     void clearSubtasks();
 }
