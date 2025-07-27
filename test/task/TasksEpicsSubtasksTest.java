@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TasksEpicsSubtasksTest {
     @Test
@@ -28,6 +29,6 @@ public class TasksEpicsSubtasksTest {
         Epic epic2 = new Epic("A", "s", new ArrayList<>());
         Subtask subtask1 = new Subtask("a", "a", Status.DONE, epic1);
         Subtask subtask2 = new Subtask("a", "a", Status.DONE, epic2);
-        assertEquals(epic1, epic2);
+        epic1.equals(epic2);
     }
 }

@@ -177,23 +177,23 @@ public class InMemoryTaskManagerTest {
 
     @Test
     public void deletedTaskShouldBeDeletedInHistoryManager() {
-        Task task = new Task("asdfa", "asdasdf", Status.NEW);
-        Epic epic = new Epic("epic", "asdasdf", new ArrayList<>());
-        Subtask subtask = new Subtask("asdfa", "asdasdf", Status.NEW, epic);
+        int taskId = taskManager.addTask(new Task("asdfa", "asdasdf", Status.NEW));
+        int epicId = taskManager.addEpic(new Epic("epic", "asdasdf", new ArrayList<>()));
+        int subtaskId = taskManager.addSubtask(new Subtask("sub", "asdasd", Status.DONE, taskManager.getEpic(epicId)));
 
-        taskManager.addTask(task);
-        taskManager.addEpic(epic);
+        taskManager.getEpic(epicId);
+        taskManager.getTask(taskId);
+        taskManager.getSubtask(subtaskId);
 
-        taskManager.getEpic(epic.getId());
-        taskManager.getTask(task.getId());
-        taskManager.getSubtask(subtask.getId());
+        assertEquals(3, taskManager.getHistory().size());
 
-        List<Task> expectedList = new ArrayList<>();
-        expectedList.add(subtask);
-        expectedList.add(task);
-        expectedList.add(epic);
+        taskManager.removeTask(taskId);
 
-        assertEquals(taskManager.getHistory(), expectedList);
+        assertEquals(2, taskManager.getHistory().size());
+
+        taskManager.removeEpic(epicId);
+
+        assertEquals(0, taskManager.getHistory().size());
     }
 
     @Test
@@ -220,22 +220,21 @@ public class InMemoryTaskManagerTest {
 
     @Test
     public void removingEpicShouldRemoveItsSubtasksFromHistory() {
-        Epic epic = new Epic("epic", "asdfasdf", new ArrayList<>());
-        Subtask subtask1 = new Subtask("subtask1", "asdfas", Status.NEW, epic);
-        Subtask subtask2 = new Subtask("subtask2", "asdfas", Status.NEW, epic);
-        Subtask subtask3 = new Subtask("subtask3", "asdfas", Status.NEW, epic);
-
-        taskManager.addEpic(epic);
+        int epicId = taskManager.addEpic(new Epic("epic", "asdfasdf", new ArrayList<>()));
+        int subtaskId1 = taskManager.addSubtask(new Subtask("subtask1", "asdfas",
+                Status.NEW, taskManager.getEpic(epicId)));
+        int subtaskId2 = taskManager.addSubtask(new Subtask("subtask2", "asdfas", Status.NEW, taskManager.getEpic(epicId)));
+        int subtaskId3 = taskManager.addSubtask(new Subtask("subtask3", "asdfas", Status.NEW, taskManager.getEpic(epicId)));
 
         assertEquals(taskManager.getSubtasks().size(), 3);
 
-        taskManager.getSubtask(subtask1.getId());
-        taskManager.getSubtask(subtask2.getId());
-        taskManager.getSubtask(subtask3.getId());
+        taskManager.getSubtask(subtaskId1);
+        taskManager.getSubtask(subtaskId2);
+        taskManager.getSubtask(subtaskId3);
 
-        assertEquals(taskManager.getHistory().size(), 3);
+        assertEquals(taskManager.getHistory().size(), 4);
 
-        taskManager.removeEpic(epic.getId());
+        taskManager.removeEpic(epicId);
 
         assertEquals(taskManager.getHistory().size(), 0);
     }

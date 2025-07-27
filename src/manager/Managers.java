@@ -28,6 +28,10 @@ public class Managers {
                 String string = bufferedReader.readLine();
                 if (!string.isBlank()) {
                     Task task = stringToTask(string, fileBackedTaskManager);
+                    int maxCounter = Math.max(fileBackedTaskManager.getCounter(), task.getId());
+
+                    fileBackedTaskManager.setCounter(task.getId() - 1); //В методах add counter увеличивается на 1
+
                     if (task instanceof Epic) {
                         fileBackedTaskManager.addEpic((Epic) task);
                     } else if (task instanceof Subtask) {
@@ -35,6 +39,8 @@ public class Managers {
                     } else if (task instanceof Task) {
                         fileBackedTaskManager.addTask(task);
                     }
+
+                    fileBackedTaskManager.setCounter(maxCounter);
                 }
             }
         } catch (IOException e) {
@@ -52,6 +58,7 @@ public class Managers {
             case "epic" -> new Epic(strings[2], strings[4], new ArrayList<>());
             default -> null;
         };
+        task.setId(Integer.parseInt(strings[0]));
         return task;
     }
 }

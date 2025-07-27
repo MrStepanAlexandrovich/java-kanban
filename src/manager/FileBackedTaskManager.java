@@ -1,12 +1,15 @@
 package manager;
 
 import task.Epic;
+import task.Status;
 import task.Subtask;
 import task.Task;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private Path path;
@@ -88,6 +91,29 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         string = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n", task.getId(),
                 type, task.getName(), task.getStatus(), task.getDescription(), epicId);
         return string;
+    }
+
+
+    //Пользовательский сценарий
+    public static void main(String[] args) {
+        TaskManager taskManager = new FileBackedTaskManager(Paths.get("1.txt").toFile());
+        int epicId = taskManager.addEpic(new Epic("epic", "description", new ArrayList<>()));
+        taskManager.addTask(new Task("Zadacha", "Opisanie", Status.DONE));
+        taskManager.addSubtask(new Subtask("subtask", "desc", Status.DONE,
+                taskManager.getEpic(epicId)));                   //Сохраняем в файл
+
+        TaskManager loadedTaskManager = Managers.loadFromFile(Paths.get("1.txt").toFile());
+        for (Task task : loadedTaskManager.getTasks()) {  //Загружаем из файла
+            System.out.println(task);
+        }
+
+        for (Epic epic : loadedTaskManager.getEpics()) {
+            System.out.println(epic);
+        }
+
+        for (Subtask subtask : loadedTaskManager.getSubtasks()) {
+            System.out.println(subtask);
+        }
     }
 }
 

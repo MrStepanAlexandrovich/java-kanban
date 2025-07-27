@@ -61,6 +61,8 @@ public class Task {
     }
 
     public void setId(Integer id) {
-        this.id = id;
+        if (id >= 1) {
+            this.id = id;
+        }
     }
 }

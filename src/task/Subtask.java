@@ -27,9 +27,6 @@ public class Subtask extends Task {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        Subtask subtask = (Subtask) o;
-        return Objects.equals(epic, subtask.epic);
+        return super.equals(o);
     }
 }

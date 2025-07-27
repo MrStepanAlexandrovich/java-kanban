@@ -8,7 +8,7 @@ import java.util.List;
 import task.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    private static int counter = 0;
+    private int counter = 0;               //Всё же решил переделать id на счётчик - так гораздо удобней
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
@@ -27,6 +27,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void clearTasks() {
         tasks.clear();
+    }
+
+    public void setCounter(int counter) {
+        this.counter = counter;
     }
 
     @Override
@@ -90,6 +94,10 @@ public class InMemoryTaskManager implements TaskManager {
         refreshStatus(epic);
 
         return epic.getId();
+    }
+
+    public int getCounter() {
+        return counter;
     }
 
     @Override
@@ -172,9 +180,7 @@ public class InMemoryTaskManager implements TaskManager {
             subtasks.put(++counter, subtask);
             subtask.setId(counter);
         }
-        Epic epic = subtask.getEpic();
-        epic.getSubtasks().add(subtask);
-        refreshStatus(epic);
+        refreshStatus(subtask.getEpic());
 
         return subtask.getId();
     }
