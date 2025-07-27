@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private Path path;
+
     public FileBackedTaskManager(File file) {
         super();
         this.path = file.toPath();
@@ -117,8 +118,3 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 }
 
-class ManagerSaveException extends Exception {
-    public ManagerSaveException(String message) {
-        super(message);
-    }
-}

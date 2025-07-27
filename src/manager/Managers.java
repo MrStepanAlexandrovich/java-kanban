@@ -44,7 +44,7 @@ public class Managers {
                 }
             }
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
         return fileBackedTaskManager;
     }
