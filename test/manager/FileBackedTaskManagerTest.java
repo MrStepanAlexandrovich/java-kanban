@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FileBackedTaskManagerTest {
     static FileBackedTaskManager fbtm = null;
     static File file = null;
-    private String HEADER = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
+    private final String HEADER = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
             "id", "type", "name", "status", "description", "epic");
 
     static String task = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
@@ -42,7 +42,7 @@ public class FileBackedTaskManagerTest {
             e.printStackTrace();
         }
 
-        fbtm = Managers.loadFromFile(file);
+        fbtm = FileBackedTaskManager.loadFromFile(file);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class FileBackedTaskManagerTest {
     @Test
     public void managerShouldLoadFromEmptyFile() {
         try {
-            fbtm = Managers.loadFromFile(File.createTempFile("empty", ".txt"));
+            fbtm = FileBackedTaskManager.loadFromFile(File.createTempFile("empty", ".txt"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
