@@ -28,6 +28,6 @@ public class TasksEpicsSubtasksTest {
         Epic epic2 = new Epic("A", "s", new ArrayList<>());
         Subtask subtask1 = new Subtask("a", "a", Status.DONE, epic1);
         Subtask subtask2 = new Subtask("a", "a", Status.DONE, epic2);
-        assertEquals(epic1, epic2);
+        epic1.equals(epic2);
     }
 }

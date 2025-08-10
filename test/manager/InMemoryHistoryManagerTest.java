@@ -7,24 +7,27 @@ import task.Subtask;
 import task.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class InMemoryHistoryManagerTest {
     @Test
     public void getHistoryShouldReturnListOfTasks() {
-        HistoryManager historyManager = Managers.getDefaultHistory();
-        ArrayList<Task> expectedArrayList = new ArrayList<>();
+        TaskManager taskManager = Managers.getDefault();
 
-        expectedArrayList.add(new Epic("adsf", null, new ArrayList<>()));
-        expectedArrayList.add(new Task("adsfzcx", null, Status.NEW));
-        expectedArrayList.add(new Subtask("sadfas", null,Status.NEW, new Epic("asdfxzv", null, new ArrayList<>())));
+        int idEpic = taskManager.addEpic(new Epic("adsf", null, new ArrayList<>()));
+        int idTask = taskManager.addTask(new Task("adsfzcx", null, Status.NEW));
+        int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW, taskManager.getEpic(idEpic)));
 
-        historyManager.add(expectedArrayList.get(0));
-        historyManager.add(expectedArrayList.get(1));
-        historyManager.add(expectedArrayList.get(2));
+        Epic epic = taskManager.getEpic(idEpic);
+        Task task = taskManager.getTask(idTask);
+        Subtask subtask = taskManager.getSubtask(idSubtask);
 
-        assertEquals(expectedArrayList, historyManager.getHistory());
+        assertEquals(subtask, taskManager.getHistory().get(0));
+        assertEquals(task, taskManager.getHistory().get(1));
+        assertEquals(epic, taskManager.getHistory().get(2));
+        assertEquals(taskManager.getHistory().size(), 3);
     }
 
     @Test
@@ -51,26 +54,26 @@ public class InMemoryHistoryManagerTest {
         Subtask subtask3 = new Subtask("Умыться", null, Status.NEW, epic);
 
         Epic epicFromTaskManager = taskManager.getEpic(epic.getId());
-        ArrayList<Task> history = taskManager.getHistory();
-        Epic epicFromHistoryManager = (Epic)taskManager.getHistory().get(0);
+        List<Task> history = taskManager.getHistory();
+        Epic epicFromHistoryManager = (Epic) taskManager.getHistory().get(0);
         assertEquals(epicFromHistoryManager, epicFromTaskManager);
     }
 
     @Test
-    public void historyManagerShouldContain10Tasks() {
+    public void historyManagerShouldFillWhenGetTask() {
         TaskManager taskManager = Managers.getDefault();
 
-        int expectedHistorySize = 10;
+        int expectedHistorySize = 12;
 
         for (int i = 0; i < 12; i++) {
             taskManager.addTask(new Task(String.valueOf(i), null, Status.NEW));
         }
 
-        for (Task task : taskManager.getTasks().values()) {
+        for (Task task : taskManager.getTasks()) {
             taskManager.getTask(task.getId());
         }
 
-        ArrayList<Task> history = taskManager.getHistory();
+        List<Task> history = taskManager.getHistory();
         assertEquals(expectedHistorySize, history.size());
     }
 }
