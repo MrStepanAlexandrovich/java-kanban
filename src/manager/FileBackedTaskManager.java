@@ -6,11 +6,15 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final Path path;
+    private static final String FORMATTER = "%-10s %-15s %-20s %-20s %-15s %-7s %-10 %-10\n";
+    private static final String TIME_FORMATTER = "HH:mm|dd.MM.yyyy";
 
     public FileBackedTaskManager(File file) {
         super();
@@ -53,8 +57,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private void save() throws ManagerSaveException {
-        String header = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n",
-                "id", "type", "name", "status", "description", "epic");
+        String header = String.format(FORMATTER, "id", "type", "name", "status", "description", "epic", "start time",
+                "duration");
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.path)) {
             bufferedWriter.write(header);
             for (Task task : super.getTasks()) {
@@ -77,6 +81,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String string;
         Integer epicId;
         String type;
+        LocalDateTime start = task.getStartTime();
+        Duration duration = task.getDuration();
 
         switch (task.getType()) {
             case TASK -> {
@@ -97,8 +103,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
         }
 
-        string = String.format("%-10s %-15s %-20s %-20s %-15s %-7s\n", task.getId(),
-                type, task.getName(), task.getStatus(), task.getDescription(), epicId);
+        string = String.format(FORMATTER, task.getId(), type, task.getName(), task.getStatus(), task.getDescription(),
+                epicId, task.getStartTime(), task.getDuration());
         return string;
     }
 
@@ -141,7 +147,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 case "task" -> new Task(strings[2], strings[4], Status.valueOf(strings[3]));
                 case "subtask" -> new Subtask(strings[2], strings[4], Status.valueOf(strings[3]),
                         fileBackedTaskManager.getEpic(Integer.parseInt(strings[5])));
-                case "epic" -> new Epic(strings[2], strings[4], new ArrayList<>());
+                case "epic" -> new Epic(strings[2], strings[4]);
                 default -> null;
             };
             try {
@@ -155,11 +161,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     //Пользовательский сценарий
     public static void main(String[] args) {
-        /*TaskManager taskManager = Managers.getDefault();
-        int epicId = taskManager.addEpic(new Epic("epic", "description", new ArrayList<>()));
+        TaskManager taskManager = Managers.getDefault();
+        int epicId = taskManager.addEpic(new Epic("epic", "description"));
         taskManager.addTask(new Task("Zadacha", "Opisanie", Status.DONE));
         taskManager.addSubtask(new Subtask("subtask", "desc", Status.NEW,
-                taskManager.getEpic(epicId)));    */            //Сохраняем в файл
+                taskManager.getEpic(epicId)));               //Сохраняем в файл
 
         TaskManager loadedTaskManager = FileBackedTaskManager.loadFromFile(Paths.get("savedTasks.txt").toFile());
         for (Task task : loadedTaskManager.getTasks()) {  //Загружаем из файла

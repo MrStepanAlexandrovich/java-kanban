@@ -9,22 +9,21 @@ import java.util.List;
 import java.util.Objects;
 
 public class Epic extends Task {
-    private ArrayList<Subtask> subtasks;
+    private List<Subtask> subtasks = new ArrayList<>();
     private LocalDateTime endTime;
 
-    public Epic(String name, String description, ArrayList<Subtask> subtasks, LocalDateTime startTime,
-                LocalDateTime endTime) {
+    public Epic(String name, String description) {
         super(name, description, Status.NEW);
-        this.subtasks = subtasks;
         setType(Type.EPIC);
     }
 
-    public ArrayList<Subtask> getSubtasks() {
+    public List<Subtask> getSubtasks() {
         return subtasks;
     }
 
     public void addSubtask(Subtask subtask) {
         subtasks.add(subtask);
+        refreshTime();
     }
 
     @Override
@@ -60,16 +59,18 @@ public class Epic extends Task {
         return Duration.between(getStartTime(), getEndTime());
     }
 
-    private List<Subtask> getSortedSubtasks() {
-        List<Subtask> sortedList = List.copyOf(subtasks);
-        sortedList.sort(Comparator.comparing(Task::getStartTime));
-        return sortedList;
+    public void refreshTime() {
+        setStartTime(findStartTime());
+        setEndTime(findEndTime());
+        setDuration(calculateDuration());
     }
 
+    private void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 
-    private void findIntersection() {
-        List<Subtask> sortedList = getSortedSubtasks();
-
-        sortedList.stream().
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 }

@@ -1,9 +1,7 @@
 package manager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import task.*;
 
@@ -35,6 +33,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addTask(Task task) {
+        if (findIntersection(task)) {
+            System.out.println("Найдено пересечение!");
+            return Integer.MIN_VALUE;
+        }
+
         if (task != null) {
             tasks.put(++counter, task);
             task.setId(counter);
@@ -58,6 +61,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int updateTask(int id, Task task) {
+        if (findIntersection(task)) {
+            System.out.println("Найдено пересечение!");
+            return Integer.MIN_VALUE;
+        }
+
         tasks.put(id, task);
         task.setId(id);
         historyManager.add(task);
@@ -82,12 +90,17 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addEpic(Epic epic) {
+        if (findIntersection(epic)) {
+            System.out.println("Найдено пересечение!");
+            return Integer.MIN_VALUE;
+        }
+
         if (epic != null) {
             epics.put(++counter, epic);
             epic.setId(counter);
         }
 
-        ArrayList<Subtask> newSubtasks = epic.getSubtasks();
+        List<Subtask> newSubtasks = epic.getSubtasks();
         for (Subtask subtask : newSubtasks) {
             subtasks.put(subtask.getId(), subtask);    //добавляем сабтаски в список в TaskManager
         }
@@ -104,7 +117,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeEpic(int id) {
         Epic epic = epics.get(id);
 
-        ArrayList<Subtask> subtasks = epic.getSubtasks();
+        List<Subtask> subtasks = epic.getSubtasks();
         for (Subtask subtask : subtasks) {
             historyManager.remove(subtask.getId());
             this.subtasks.remove(subtask.getId()); //Удаляем сабтаски эпика из списка в TaskManager
@@ -125,6 +138,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int updateEpic(int id, Epic epic) {
+        if (findIntersection(epic)) {
+            System.out.println("Найдено пересечение!");
+            return Integer.MIN_VALUE;
+        }
+
         List<Subtask> subtasks = getEpic(id).getSubtasks();
         getEpics().set(id, epic);
 
@@ -136,7 +154,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getSubtasksOfEpic(Epic epic) {
+    public List<Subtask> getSubtasksOfEpic(Epic epic) {
         return epic.getSubtasks();
     }
 
@@ -168,7 +186,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void clearSubtasks() {
         subtasks.clear();
-        for (Epic epic : epics.values()) {
+        for (Epic epic : getEpics()) {
             epic.getSubtasks().clear();
             refreshStatus(epic);
         }
@@ -176,6 +194,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addSubtask(Subtask subtask) {
+        if (findIntersection(subtask)) {
+            System.out.println("Найдено пересечение!");
+            return Integer.MIN_VALUE;
+        }
+
         if (subtask != null) {
             subtasks.put(++counter, subtask);
             subtask.setId(counter);
@@ -190,9 +213,11 @@ public class InMemoryTaskManager implements TaskManager {
         Subtask subtask = subtasks.get(id);
         Epic epic = subtask.getEpic();
 
-        historyManager.remove(id);
         epic.getSubtasks().remove(subtask); //Удаляем из эпика
+        epic.refreshTime();
         refreshStatus(epic);
+
+        historyManager.remove(id);
 
         subtasks.remove(id); //Удаляем из списка
     }
@@ -206,6 +231,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int updateSubtask(int id, Subtask subtask) {
+        if (findIntersection(subtask)) {
+            System.out.println("Найдено пересечение!");
+            return Integer.MIN_VALUE;
+        }
+
         getSubtasks().set(id, subtask);
         historyManager.remove(id);
         historyManager.add(subtask);
@@ -225,5 +255,25 @@ public class InMemoryTaskManager implements TaskManager {
         List<T> list = new ArrayList<>();
         list.addAll(collection);
         return list;
+    }
+
+    public List<Task> getPrioritizedTasks() {
+        List<Task> sortedList = new ArrayList<>(getTasks());
+        sortedList.addAll(getSubtasks());
+        sortedList.sort(Comparator.comparing(Task::getStartTime));
+        return sortedList;
+    }
+
+    public boolean findIntersection(Task task) {
+        List<Task> sortedList = getPrioritizedTasks();
+
+        return sortedList.stream()
+                .anyMatch(taskOfList -> segmentsIntersect(task.getStartTime(), task.getEndTime(),
+                        taskOfList.getStartTime(), taskOfList.getEndTime()));
+    }
+
+    private boolean segmentsIntersect(LocalDateTime start1, LocalDateTime end1, LocalDateTime start2, LocalDateTime end2) {
+        return ((start1.isAfter(start2) || start1.isEqual(start2)) && start1.isBefore(end2))
+                || (end1.isAfter(start2) && (end1.isBefore(end2) || end1.isEqual(end2)));
     }
 }

@@ -16,7 +16,7 @@ public class InMemoryHistoryManagerTest {
     public void getHistoryShouldReturnListOfTasks() {
         TaskManager taskManager = Managers.getDefault();
 
-        int idEpic = taskManager.addEpic(new Epic("adsf", null, new ArrayList<>()));
+        int idEpic = taskManager.addEpic(new Epic("adsf", null));
         int idTask = taskManager.addTask(new Task("adsfzcx", null, Status.NEW));
         int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW, taskManager.getEpic(idEpic)));
 
@@ -47,7 +47,7 @@ public class InMemoryHistoryManagerTest {
     public void epicInHistoryManagerAndTheSameEpicInTaskManagerShouldBeEqual() {
         TaskManager taskManager = Managers.getDefault();
 
-        Epic epic = new Epic("Поехать в другой город", null, new ArrayList<>());
+        Epic epic = new Epic("Поехать в другой город", null);
         taskManager.addEpic(epic);
         Subtask subtask1 = new Subtask("Собрать вещи", null, Status.NEW, epic);
         Subtask subtask2 = new Subtask("Прибраться", null, Status.NEW, epic);
