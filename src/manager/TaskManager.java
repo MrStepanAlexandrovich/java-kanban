@@ -4,7 +4,6 @@ import task.Epic;
 import task.Subtask;
 import task.Task;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskManager {
@@ -38,7 +37,7 @@ public interface TaskManager {
 
     int updateEpic(int id, Epic epic);
 
-    ArrayList<Subtask> getSubtasksOfEpic(Epic epic);
+    List<Subtask> getSubtasksOfEpic(Epic epic);
 
     //Subtasks
     List<Subtask> getSubtasks();
@@ -52,4 +51,8 @@ public interface TaskManager {
     int updateSubtask(int id, Subtask subtask);
 
     void clearSubtasks();
+
+    List<Task> getPrioritizedTasks();
+
+    boolean findIntersection(Task task);
 }
