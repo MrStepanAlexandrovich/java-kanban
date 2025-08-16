@@ -2,11 +2,7 @@ package task;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Epic extends Task {
     private List<Subtask> subtasks = new ArrayList<>();
@@ -40,23 +36,35 @@ public class Epic extends Task {
     }
 
     private LocalDateTime findStartTime() {
-        return subtasks.stream()
+        Optional<Subtask> firstSubtask = subtasks.stream()
                 .filter(subtask -> subtask.getStartTime() != null)
-                .min(Comparator.comparing(subtask -> subtask.getStartTime()))
-                .get()
-                .getStartTime();
+                .min(Comparator.comparing(subtask -> subtask.getStartTime()));
+
+        if (firstSubtask.isPresent()) {
+            return firstSubtask.get().getStartTime();
+        } else {
+            return null;
+        }
     }
 
     private LocalDateTime findEndTime() {
-        return subtasks.stream()
+        Optional<Subtask> lastSubtask = subtasks.stream()
                 .filter(subtask -> subtask.getEndTime() != null)
-                .max(Comparator.comparing(subtask -> subtask.getEndTime()))
-                .get()
-                .getEndTime();
+                .max(Comparator.comparing(subtask -> subtask.getEndTime()));
+
+        if (lastSubtask.isPresent()) {
+            return lastSubtask.get().getEndTime();
+        } else {
+            return null;
+        }
     }
 
     private Duration calculateDuration() {
-        return Duration.between(getStartTime(), getEndTime());
+        if (getStartTime() != null && getEndTime() != null) {
+            return Duration.between(getStartTime(), getEndTime());
+        } else {
+            return null;
+        }
     }
 
     public void refreshTime() {

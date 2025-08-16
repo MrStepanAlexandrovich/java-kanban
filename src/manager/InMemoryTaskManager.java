@@ -2,6 +2,7 @@ package manager;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import task.*;
 
@@ -54,9 +55,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        Task task = tasks.get(id);
-        historyManager.add(task);
-        return task;
+        Optional<Task> task = Optional.ofNullable(tasks.get(id));
+
+        if (task.isPresent()) {
+            historyManager.add(task.get());
+            return task.get();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -131,9 +137,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic getEpic(int id) {
-        Epic epic = epics.get(id);
-        historyManager.add(epic);
-        return epic;
+        Optional<Epic> epic = Optional.ofNullable(epics.get(id));
+
+        if (epic.isPresent()) {
+            historyManager.add(epic.get());
+            return epic.get();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -147,6 +158,7 @@ public class InMemoryTaskManager implements TaskManager {
         getEpics().set(id, epic);
 
         refreshStatus(epic);
+        epic.refreshTime();
         historyManager.remove(id);
         historyManager.add(epic);
 
@@ -203,7 +215,10 @@ public class InMemoryTaskManager implements TaskManager {
             subtasks.put(++counter, subtask);
             subtask.setId(counter);
         }
+
+        subtask.getEpic().getSubtasks().add(subtask);
         refreshStatus(subtask.getEpic());
+        subtask.getEpic().refreshTime();
 
         return subtask.getId();
     }
@@ -224,9 +239,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask getSubtask(int id) {
-        Subtask subtask = subtasks.get(id);
-        historyManager.add(subtask);
-        return subtask;
+        Optional<Subtask> subtask = Optional.ofNullable(subtasks.get(id));
+
+        if (subtask.isPresent()) {
+            historyManager.add(subtask.get());
+            return subtask.get();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -260,7 +280,12 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Task> getPrioritizedTasks() {
         List<Task> sortedList = new ArrayList<>(getTasks());
         sortedList.addAll(getSubtasks());
-        sortedList.sort(Comparator.comparing(Task::getStartTime));
+
+        sortedList = sortedList.stream()
+                .filter(task -> task.getStartTime() != null)
+                .sorted(Comparator.comparing(Task::getStartTime))
+                .collect(Collectors.toList());
+
         return sortedList;
     }
 
@@ -273,7 +298,11 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private boolean segmentsIntersect(LocalDateTime start1, LocalDateTime end1, LocalDateTime start2, LocalDateTime end2) {
-        return ((start1.isAfter(start2) || start1.isEqual(start2)) && start1.isBefore(end2))
-                || (end1.isAfter(start2) && (end1.isBefore(end2) || end1.isEqual(end2)));
+        if (start1 != null && start2 != null && end1 != null && end2 != null) {
+            return ((start1.isAfter(start2) || start1.isEqual(start2)) && start1.isBefore(end2))
+                    || (end1.isAfter(start2) && (end1.isBefore(end2) || end1.isEqual(end2)));
+        } else {
+            return false;
+        }
     }
 }

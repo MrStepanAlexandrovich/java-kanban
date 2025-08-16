@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TasksEpicsSubtasksTest {
     @Test
@@ -38,14 +37,19 @@ public class TasksEpicsSubtasksTest {
         Epic epic = new Epic("epic", null);
         Subtask subtask = null;
         LocalDateTime time = LocalDateTime.of(2000, 11, 21, 10, 50);
-        for (int i = 0; i < 10; i++) {
-            time = time.plusMinutes(10 * i);
-            subtask = new Subtask("subtask" + i, null, Status.DONE, epic,
-                    time, Duration.ofMinutes(10 * i));
-        }
+        Subtask subtask1 = new Subtask("sub1", null, Status.DONE, epic,
+                LocalDateTime.of(2022, 11, 21, 21, 21), Duration.ofMinutes(60));
+        Subtask subtask2 = new Subtask("sub2", null, Status.DONE, epic,
+                LocalDateTime.of(2022, 11, 22, 21, 21), Duration.ofMinutes(60));
+        Subtask subtask3 = new Subtask("sub3", null, Status.DONE, epic,
+                LocalDateTime.of(2022, 11, 23, 21, 21), Duration.ofMinutes(60));
 
-        assertEquals(LocalDateTime.of(2000, 11, 21, 10, 50), epic.getStartTime());
+        epic.addSubtask(subtask1);
+        epic.addSubtask(subtask2);
+        epic.addSubtask(subtask3);
 
-        assertEquals(subtask.getEndTime(), epic.getEndTime());
+        assertEquals(subtask1.getStartTime(), epic.getStartTime());
+
+        assertEquals(subtask3.getEndTime(), epic.getEndTime());
     }
 }

@@ -2,7 +2,6 @@ package task;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Objects;
 
 public class Task {
@@ -31,6 +30,7 @@ public class Task {
             this.name = name;
             this.description = description;
             this.status = status;
+            this.type = Type.TASK;
         }
     }
 
@@ -69,6 +69,9 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", status=" + status +
                 ", id=" + id +
+                ", type=" + type +
+                ", startTime=" + startTime +
+                ", duration=" + duration +
                 '}';
     }
 
@@ -99,7 +102,11 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
-        return startTime.plus(duration);
+        if (startTime != null) {
+            return startTime.plus(duration);
+        } else {
+            return null;
+        }
     }
 
     public LocalDateTime getStartTime() {
