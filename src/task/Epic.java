@@ -18,8 +18,10 @@ public class Epic extends Task {
     }
 
     public void addSubtask(Subtask subtask) {
-        subtasks.add(subtask);
-        refreshTime();
+        if (!subtasks.contains(subtask)) {
+            subtasks.add(subtask);
+            refreshTime();
+        }
     }
 
     @Override
@@ -60,11 +62,12 @@ public class Epic extends Task {
     }
 
     private Duration calculateDuration() {
-        if (getStartTime() != null && getEndTime() != null) {
-            return Duration.between(getStartTime(), getEndTime());
-        } else {
-            return null;
-        }
+        Duration summaryDuration = subtasks.stream()
+                .filter(subtask -> subtask.getDuration() != null)
+                .map(subtask -> subtask.getDuration())
+                .reduce(Duration.ZERO, Duration::plus);
+
+        return summaryDuration;
     }
 
     public void refreshTime() {

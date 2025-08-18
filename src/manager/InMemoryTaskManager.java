@@ -34,17 +34,17 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addTask(Task task) {
-        if (findIntersection(task)) {
-            System.out.println("Найдено пересечение!");
-            return Integer.MIN_VALUE;
-        }
-
         if (task != null) {
+            if (findIntersection(task)) {
+                System.out.println("Найдено пересечение!");
+                return Integer.MIN_VALUE;
+            }
             tasks.put(++counter, task);
             task.setId(counter);
+            return task.getId();
+        } else {
+            return Integer.MIN_VALUE;
         }
-
-        return task.getId();
     }
 
     @Override
@@ -67,16 +67,26 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int updateTask(int id, Task task) {
-        if (findIntersection(task)) {
-            System.out.println("Найдено пересечение!");
+        if (tasks.containsKey(id)) {
+            if (task != null) {
+                if (findIntersection(task)) {
+                    System.out.println("Найдено пересечение!");
+                    return Integer.MIN_VALUE;
+                } else {
+                    tasks.put(id, task);
+                    task.setId(id);
+                    historyManager.add(task);
+
+                    return task.getId();
+                }
+            } else {
+                System.out.println("Задача не была изменена!");
+                return Integer.MIN_VALUE;
+            }
+        } else {
+            System.out.println("Некорректный ID!");
             return Integer.MIN_VALUE;
         }
-
-        tasks.put(id, task);
-        task.setId(id);
-        historyManager.add(task);
-
-        return task.getId();
     }
 
     //Epics
@@ -96,23 +106,29 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addEpic(Epic epic) {
-        if (findIntersection(epic)) {
-            System.out.println("Найдено пересечение!");
+        if (epic != null) {
+            if (findIntersection(epic)) {
+                System.out.println("Найдено пересечение!");
+                return Integer.MIN_VALUE;
+            }
+
+            if (epic != null) {
+                epics.put(++counter, epic);
+                epic.setId(counter);
+            }
+
+            List<Subtask> newSubtasks = epic.getSubtasks();
+            for (Subtask subtask : newSubtasks) {
+                subtask.setId(++counter);
+                subtasks.put(counter, subtask);    //добавляем сабтаски в список в TaskManager
+            }
+            refreshStatus(epic);
+
+            return epic.getId();
+        } else {
+            System.out.println("Эпик не был добавлен!");
             return Integer.MIN_VALUE;
         }
-
-        if (epic != null) {
-            epics.put(++counter, epic);
-            epic.setId(counter);
-        }
-
-        List<Subtask> newSubtasks = epic.getSubtasks();
-        for (Subtask subtask : newSubtasks) {
-            subtasks.put(subtask.getId(), subtask);    //добавляем сабтаски в список в TaskManager
-        }
-        refreshStatus(epic);
-
-        return epic.getId();
     }
 
     public int getCounter() {
@@ -121,18 +137,22 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeEpic(int id) {
-        Epic epic = epics.get(id);
+        if (epics.containsKey(id)) {
+            Epic epic = epics.get(id);
 
-        List<Subtask> subtasks = epic.getSubtasks();
-        for (Subtask subtask : subtasks) {
-            historyManager.remove(subtask.getId());
-            this.subtasks.remove(subtask.getId()); //Удаляем сабтаски эпика из списка в TaskManager
+            List<Subtask> subtasks = epic.getSubtasks();
+            for (Subtask subtask : subtasks) {
+                historyManager.remove(subtask.getId());
+                this.subtasks.remove(subtask.getId()); //Удаляем сабтаски эпика из списка в TaskManager
+            }
+
+            historyManager.remove(id);
+            epic.getSubtasks().clear(); //Удаляем сабтаски из объекта
+
+            epics.remove(id); //Удаляем эпик
+        } else {
+            System.out.println("Некорректный ID!");
         }
-
-        historyManager.remove(id);
-        epic.getSubtasks().clear(); //Удаляем сабтаски из объекта
-
-        epics.remove(id); //Удаляем эпик
     }
 
     @Override
@@ -149,25 +169,35 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int updateEpic(int id, Epic epic) {
-        if (findIntersection(epic)) {
-            System.out.println("Найдено пересечение!");
+        if (epics.containsKey(id)) {
+            if (epic != null) {
+                if (findIntersection(epic)) {
+                    System.out.println("Найдено пересечение!");
+                    return Integer.MIN_VALUE;
+                }
+
+                epics.replace(id, epic);
+
+                epic.setId(id);
+                refreshStatus(epic);
+                epic.refreshTime();
+                historyManager.remove(id);
+                historyManager.add(epic);
+
+                return epic.getId();
+            } else {
+                System.out.println("Эпик не был обновлен!");
+                return Integer.MIN_VALUE;
+            }
+        } else {
+            System.out.println("Некорректный ID!");
             return Integer.MIN_VALUE;
         }
-
-        List<Subtask> subtasks = getEpic(id).getSubtasks();
-        getEpics().set(id, epic);
-
-        refreshStatus(epic);
-        epic.refreshTime();
-        historyManager.remove(id);
-        historyManager.add(epic);
-
-        return epic.getId();
     }
 
     @Override
-    public List<Subtask> getSubtasksOfEpic(Epic epic) {
-        return epic.getSubtasks();
+    public List<Subtask> getSubtasksOfEpic(int id) {
+        return epics.get(id).getSubtasks();
     }
 
     public void refreshStatus(Epic epic) {
@@ -205,36 +235,47 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public int addSubtask(Subtask subtask) {
-        if (findIntersection(subtask)) {
-            System.out.println("Найдено пересечение!");
+    public int addSubtask(Subtask subtask, Epic epic) {
+        if (!subtasks.containsValue(subtask)) {
+            if (findIntersection(subtask)) {
+                System.out.println("Найдено пересечение!");
+                return Integer.MIN_VALUE;
+            }
+
+            if (subtask != null) {
+                subtasks.put(++counter, subtask);
+                subtask.setId(counter);
+
+                subtask.setEpic(epic);
+                refreshStatus(epic);
+                epic.refreshTime();
+
+                return subtask.getId();
+            } else {
+                return Integer.MIN_VALUE;
+            }
+        } else {
+            System.out.println("Подзадача уже есть в списке!");
             return Integer.MIN_VALUE;
         }
-
-        if (subtask != null) {
-            subtasks.put(++counter, subtask);
-            subtask.setId(counter);
-        }
-
-        subtask.getEpic().getSubtasks().add(subtask);
-        refreshStatus(subtask.getEpic());
-        subtask.getEpic().refreshTime();
-
-        return subtask.getId();
     }
 
     @Override
     public void removeSubtask(int id) {
-        Subtask subtask = subtasks.get(id);
-        Epic epic = subtask.getEpic();
+        if (subtasks.containsKey(id)) {
+            Subtask subtask = subtasks.get(id);
+            Epic epic = subtask.getEpic();
 
-        epic.getSubtasks().remove(subtask); //Удаляем из эпика
-        epic.refreshTime();
-        refreshStatus(epic);
+            epic.getSubtasks().remove(subtask); //Удаляем из эпика
+            epic.refreshTime();
+            refreshStatus(epic);
 
-        historyManager.remove(id);
+            historyManager.remove(id);
 
-        subtasks.remove(id); //Удаляем из списка
+            subtasks.remove(id); //Удаляем из списка
+        } else {
+            System.out.println("Некорректный ID!");
+        }
     }
 
     @Override
@@ -251,16 +292,27 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int updateSubtask(int id, Subtask subtask) {
-        if (findIntersection(subtask)) {
-            System.out.println("Найдено пересечение!");
+        if (subtasks.containsKey(id)) {
+            if (subtask != null) {
+                if (findIntersection(subtask)) {
+                    System.out.println("Найдено пересечение!");
+                    return Integer.MIN_VALUE;
+                }
+
+                subtasks.replace(id, subtask);
+                subtask.setId(id);
+                historyManager.remove(id);
+                historyManager.add(subtask);
+
+                return subtask.getId();
+            } else {
+                System.out.println("Подзадача не была обновлена!");
+                return Integer.MIN_VALUE;
+            }
+        } else {
+            System.out.println("Некорректный ID!");
             return Integer.MIN_VALUE;
         }
-
-        getSubtasks().set(id, subtask);
-        historyManager.remove(id);
-        historyManager.add(subtask);
-
-        return subtask.getId();
     }
 
     @Override
@@ -293,14 +345,18 @@ public class InMemoryTaskManager implements TaskManager {
         List<Task> sortedList = getPrioritizedTasks();
 
         return sortedList.stream()
-                .anyMatch(taskOfList -> segmentsIntersect(task.getStartTime(), task.getEndTime(),
-                        taskOfList.getStartTime(), taskOfList.getEndTime()));
+                .anyMatch(taskOfList -> segmentsIntersect(task, taskOfList));
     }
 
-    private boolean segmentsIntersect(LocalDateTime start1, LocalDateTime end1, LocalDateTime start2, LocalDateTime end2) {
-        if (start1 != null && start2 != null && end1 != null && end2 != null) {
-            return ((start1.isAfter(start2) || start1.isEqual(start2)) && start1.isBefore(end2))
-                    || (end1.isAfter(start2) && (end1.isBefore(end2) || end1.isEqual(end2)));
+    private boolean segmentsIntersect(Task task1, Task task2) {
+        LocalDateTime task1StartTime = task1.getStartTime();
+        LocalDateTime task1EndTime = task1.getEndTime();
+        LocalDateTime task2StartTime = task2.getStartTime();
+        LocalDateTime task2EndTime = task2.getEndTime();
+
+        if (task1StartTime != null && task2StartTime != null && task1EndTime != null && task2EndTime != null) {
+            return ((task1StartTime.isAfter(task2StartTime) || task1StartTime.isEqual(task2StartTime)) && task1StartTime.isBefore(task2EndTime))
+                    || (task1EndTime.isAfter(task2StartTime) && (task1EndTime.isBefore(task2EndTime) || task1EndTime.isEqual(task2EndTime)));
         } else {
             return false;
         }

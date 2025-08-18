@@ -14,7 +14,7 @@ import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final Path path;
-    static final String FORMATTER = "%-10s %-15s %-20s %-20s %-15s %-7s %-20s %-10s\n";
+    public static final String FORMATTER = "%-10s %-15s %-20s %-20s %-15s %-7s %-20s %-10s\n";
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm|dd.MM.yyyy");
 
     public FileBackedTaskManager(File file) {
@@ -45,8 +45,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public int addSubtask(Subtask subtask) {
-        int id = super.addSubtask(subtask);
+    public int addSubtask(Subtask subtask, Epic epic) {
+        int id = super.addSubtask(subtask, epic);
 
         try {
             save();
@@ -129,7 +129,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     switch (task.getType()) {
                         case Type.TASK -> fileBackedTaskManager.addTask(task);
                         case Type.EPIC -> fileBackedTaskManager.addEpic((Epic) task);
-                        case Type.SUBTASK -> fileBackedTaskManager.addSubtask((Subtask) task);
+                        case Type.SUBTASK -> fileBackedTaskManager.addSubtask((Subtask) task,
+                                ((Subtask) task).getEpic());
                     }
 
                     fileBackedTaskManager.setCounter(maxCounter);
@@ -149,7 +150,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String type = strings[1];
             String name = strings[2];
             String status = strings[3];
-            String description = strings[4];
+            String description = (strings[4].equals("null")) ? null : strings[4];
             String epic = strings[5];
             LocalDateTime startTime = (!strings[6].equals("null")) ? LocalDateTime.parse(strings[6], TIME_FORMATTER)
                     : null;

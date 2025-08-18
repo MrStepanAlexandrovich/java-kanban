@@ -36,14 +36,17 @@ public class Task {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return Objects.equals(name, task.name) && Objects.equals(description, task.description) && status == task.status && Objects.equals(id, task.id) && type == task.type;
+        return Objects.equals(name, task.name) && Objects.equals(description, task.description)
+                && status == task.status && Objects.equals(id, task.id) && type == task.type
+                && Objects.equals(startTime, task.startTime) && Objects.equals(duration, task.duration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, status, id, type);
+        return Objects.hash(name, description, status, id, type, startTime, duration);
     }
 
     public String getName() {

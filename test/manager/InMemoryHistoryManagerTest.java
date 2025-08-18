@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InMemoryHistoryManagerTest {
-    TaskManager taskManager;
+    private TaskManager taskManager;
 
     @BeforeEach
     public void beforeEach() {
@@ -38,7 +38,8 @@ public class InMemoryHistoryManagerTest {
     public void getHistoryShouldReturnListOfTasks() {
         int idEpic = taskManager.addEpic(new Epic("adsf", null));
         int idTask = taskManager.addTask(new Task("adsfzcx", null, Status.NEW));
-        int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW, taskManager.getEpic(idEpic)));
+        int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW, null),
+                taskManager.getEpic(idEpic));
 
         Epic epic = taskManager.getEpic(idEpic);
         Task task = taskManager.getTask(idTask);

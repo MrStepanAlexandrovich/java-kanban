@@ -37,12 +37,12 @@ public interface TaskManager {
 
     int updateEpic(int id, Epic epic);
 
-    List<Subtask> getSubtasksOfEpic(Epic epic);
+    List<Subtask> getSubtasksOfEpic(int id);
 
     //Subtasks
     List<Subtask> getSubtasks();
 
-    int addSubtask(Subtask subtask);
+    int addSubtask(Subtask subtask, Epic epic);
 
     void removeSubtask(int id);
 
