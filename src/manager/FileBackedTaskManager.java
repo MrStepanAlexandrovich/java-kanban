@@ -96,7 +96,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 type = "epic";
             }
             case SUBTASK -> {
-                epicId = ((Subtask) task).getEpic().getId();
+                epicId = ((Subtask) task).getEpicId();
                 type = "subtask";
             }
             default -> {
@@ -130,7 +130,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         case Type.TASK -> fileBackedTaskManager.addTask(task);
                         case Type.EPIC -> fileBackedTaskManager.addEpic((Epic) task);
                         case Type.SUBTASK -> fileBackedTaskManager.addSubtask((Subtask) task,
-                                ((Subtask) task).getEpic());
+                                fileBackedTaskManager.getEpic(((Subtask) task).getEpicId()));
                     }
 
                     fileBackedTaskManager.setCounter(maxCounter);
@@ -158,8 +158,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             task = switch (type.toLowerCase()) {
                 case "task" -> new Task(name, description, Status.valueOf(status), startTime, duration);
-                case "subtask" -> new Subtask(name, description, Status.valueOf(status),
-                        fileBackedTaskManager.getEpic(Integer.parseInt(epic)), startTime, duration);
+                case "subtask" -> { Subtask subtask = new Subtask(name, description, Status.valueOf(status),
+                        startTime, duration);
+                    subtask.setEpicId(Integer.parseInt(epic));
+                    yield subtask;
+                }
                 case "epic" -> new Epic(name, description);
                 default -> null;
             };

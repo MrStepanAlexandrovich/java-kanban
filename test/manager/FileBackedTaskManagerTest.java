@@ -109,7 +109,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         Epic epic = new Epic("epic", "desc");
         fileBackedTaskManager.addEpic(epic);
         fileBackedTaskManager.addSubtask(new Subtask("subtask", "description", Status.IN_PROGRESS,
-                null, LocalDateTime.of(2001, 4, 3, 21, 20),
+                LocalDateTime.of(2001, 4, 3, 21, 20),
                 Duration.ofMinutes(25)), epic);
 
             TaskManager fileBackedTaskManagerRead = FileBackedTaskManager.loadFromFile(file);
