@@ -36,6 +36,7 @@ public class HttpTaskServer {
                 .setPrettyPrinting()
                 .create();
        taskManager.addTask(new Task("asdfasdf", "description", Status.IN_PROGRESS));
+        taskManager.addTask(new Task("asdfasdf2", "description", Status.IN_PROGRESS));
        int epicId = taskManager.addEpic(new Epic("epic", "description"));
        taskManager.addSubtask(new Subtask("subtask", "desc", Status.NEW),
                taskManager.getEpic(epicId));
@@ -78,7 +79,7 @@ public class HttpTaskServer {
 
         @Override
         public void write(JsonWriter jsonWriter, LocalDateTime localDateTime) throws IOException {
-            if (localDateTime == null) {
+             if (localDateTime == null) {
                 jsonWriter.value("null");
             } else {
                 jsonWriter.value(dateTimeFormatter.format(localDateTime));
