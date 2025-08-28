@@ -1,23 +1,26 @@
 package server;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import manager.Managers;
 import manager.TaskManager;
+import task.Epic;
 import task.Status;
+import task.Subtask;
 import task.Task;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.logging.Handler;
 
 public class HttpTaskServer {
     private static TaskManager taskManager;
@@ -27,9 +30,15 @@ public class HttpTaskServer {
     static {
         taskManager = Managers.getDefault();
         gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .registerTypeAdapter(Duration.class, new DurationTypeAdapter())
+                .serializeNulls()
                 .setPrettyPrinting()
                 .create();
-        taskManager.addTask(new Task("asdfasdf", "description", Status.IN_PROGRESS));
+       taskManager.addTask(new Task("asdfasdf", "description", Status.IN_PROGRESS));
+       int epicId = taskManager.addEpic(new Epic("epic", "description"));
+       taskManager.addSubtask(new Subtask("subtask", "desc", Status.NEW, null),
+               taskManager.getEpic(epicId));
     }
 
     public static void main(String[] args) {
@@ -37,36 +46,73 @@ public class HttpTaskServer {
         try {
             httpServer = HttpServer.create();
             httpServer.bind(new InetSocketAddress(PORT), 0);
-            System.out.println("Сервер запущен");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        httpServer.createContext("/tasks", new GetTasksHandler());
+        httpServer.createContext("/tasks", new TasksHandler());
+        httpServer.createContext("/subtasks", new SubtasksHandler());
+        httpServer.createContext("/epics", new EpicsHandler());
+
         httpServer.start();
+        System.out.println("Сервер запущен");
     }
 
-     static class GetTasksHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String[] strings = path.split("/");
 
-            /*if (exchange.getRequestMethod().equals("GET") && )*/
-            List<Task> tasks = taskManager.getTasks();
-            String tasksJson = gson.toJson(tasks, new TaskListTypeToken().getClass());
-            exchange.sendResponseHeaders(200, 0);
-            try {
-                OutputStream os = exchange.getResponseBody();
-                os.write(tasksJson.getBytes(StandardCharsets.UTF_8));
-                os.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
 
-        }
+
+
+    public static TaskManager getTaskManager() {
+        return taskManager;
+    }
+
+    public static Gson getGson() {
+        return gson;
     }
 
     static class TaskListTypeToken extends TypeToken<List<Task>> {
 
+    }
+
+    static class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
+        static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.YYYY HH:MM:ss");
+
+        @Override
+        public void write(JsonWriter jsonWriter, LocalDateTime localDateTime) throws IOException {
+            if (localDateTime == null) {
+                jsonWriter.value("null");
+            } else {
+                jsonWriter.value(dateTimeFormatter.format(localDateTime));
+
+            }
+        }
+
+        @Override
+        public LocalDateTime read(JsonReader jsonReader) throws IOException {
+            if (jsonReader.nextString().equals("null")) {
+                return null;
+            } else {
+                return LocalDateTime.parse(jsonReader.nextString(), dateTimeFormatter);
+            }
+        }
+    }
+
+    static class DurationTypeAdapter extends TypeAdapter<Duration> {
+        @Override
+        public void write(JsonWriter jsonWriter, Duration duration) throws IOException {
+            if (duration == null) {
+                jsonWriter.value("null");
+            } else {
+                jsonWriter.value(duration.toMinutes());
+            }
+        }
+
+        @Override
+        public Duration read(JsonReader jsonReader) throws IOException {
+            if (jsonReader.nextString().equals("null")) {
+                return null;
+            } else {
+                return Duration.ofMinutes(Long.valueOf(jsonReader.nextString()));
+            }
+        }
     }
 }
