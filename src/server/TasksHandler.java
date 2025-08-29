@@ -1,13 +1,19 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 import task.Task;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class TasksHandler extends BaseHttpHandler implements HttpHandler {
@@ -51,8 +57,18 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                     sendNotFound(exchange, "Task with ID = " + id + " was not found!");
                 }
             }
-        } else if (exchange.getRequestMethod().equals("POST")) {
-            
+        } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2
+                                && strings[1].equals("tasks")) {
+            InputStream inputStream = exchange.getRequestBody();
+            String requestBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            JsonElement jsonElement = JsonParser.parseString(requestBody);
+
+            if (jsonElement.isJsonObject()) {
+                Task task = gson.fromJson(requestBody, Task.class);
+                taskManager.addTask(task);
+                System.out.println("Задача добавлена!");
+                exchange.sendResponseHeaders(200, 0);
+            }
         }
     }
 }

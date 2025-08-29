@@ -35,7 +35,8 @@ public class HttpTaskServer {
                 .serializeNulls()
                 .setPrettyPrinting()
                 .create();
-       taskManager.addTask(new Task("asdfasdf", "description", Status.IN_PROGRESS));
+       taskManager.addTask(new Task("asdfasdf", "description", Status.IN_PROGRESS, LocalDateTime.of(2020,
+               11, 20, 20, 59), Duration.ofMinutes(59)));
         taskManager.addTask(new Task("asdfasdf2", "description", Status.IN_PROGRESS));
        int epicId = taskManager.addEpic(new Epic("epic", "description"));
        taskManager.addSubtask(new Subtask("subtask", "desc", Status.NEW),
@@ -75,7 +76,7 @@ public class HttpTaskServer {
     }
 
     static class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
-        static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.YYYY HH:MM:ss");
+        static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy|HH:mm:ss");
 
         @Override
         public void write(JsonWriter jsonWriter, LocalDateTime localDateTime) throws IOException {
@@ -89,10 +90,11 @@ public class HttpTaskServer {
 
         @Override
         public LocalDateTime read(JsonReader jsonReader) throws IOException {
-            if (jsonReader.nextString().equals("null")) {
+            String date = jsonReader.nextString();
+            if (date.equals("null")) {
                 return null;
             } else {
-                return LocalDateTime.parse(jsonReader.nextString(), dateTimeFormatter);
+                return LocalDateTime.parse(date, dateTimeFormatter);
             }
         }
     }
@@ -112,7 +114,7 @@ public class HttpTaskServer {
             if (jsonReader.nextString().equals("null")) {
                 return null;
             } else {
-                return Duration.ofMinutes(Long.valueOf(jsonReader.nextString()));
+                return Duration.ofMinutes(jsonReader.nextLong());
             }
         }
     }
