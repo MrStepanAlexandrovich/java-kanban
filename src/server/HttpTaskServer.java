@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import manager.InMemoryTaskManager;
 import manager.Managers;
 import manager.TaskManager;
 import task.Epic;
@@ -23,12 +24,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class HttpTaskServer {
-    private static TaskManager taskManager;
-    private static final int PORT = 8080;
-    private static Gson gson;
+    private HttpServer httpServer;
+    private TaskManager taskManager;
+    private final int PORT = 8080;
+    private Gson gson;
 
-    static {
-        taskManager = Managers.getDefault();
+    public HttpTaskServer(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
+
+    {
         gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .registerTypeAdapter(Duration.class, new DurationTypeAdapter())
@@ -44,6 +49,13 @@ public class HttpTaskServer {
     }
 
     public static void main(String[] args) {
+        HttpTaskServer httpTaskServer = new HttpTaskServer(new InMemoryTaskManager());
+
+        httpTaskServer.start();
+        System.out.println("Сервер запущен");
+    }
+
+    public void start() {
         HttpServer httpServer;
         try {
             httpServer = HttpServer.create();
@@ -58,27 +70,26 @@ public class HttpTaskServer {
         httpServer.createContext("/prioritized", new PrioritizedTasksHandler());
 
         httpServer.start();
-        System.out.println("Сервер запущен");
     }
 
+    public void stop() {
+        httpServer.stop(0);
+    }
 
-
-
-
-    public static TaskManager getTaskManager() {
+    public TaskManager getTaskManager() {
         return taskManager;
     }
 
-    public static Gson getGson() {
+    public Gson getGson() {
         return gson;
     }
 
-    static class TaskListTypeToken extends TypeToken<List<Task>> {
+    class TaskListTypeToken extends TypeToken<List<Task>> {
 
     }
 
-    static class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
-        static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy|HH:mm:ss");
+    class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy|HH:mm:ss");
 
         @Override
         public void write(JsonWriter jsonWriter, LocalDateTime localDateTime) throws IOException {
@@ -101,7 +112,7 @@ public class HttpTaskServer {
         }
     }
 
-    static class DurationTypeAdapter extends TypeAdapter<Duration> {
+    class DurationTypeAdapter extends TypeAdapter<Duration> {
         @Override
         public void write(JsonWriter jsonWriter, Duration duration) throws IOException {
             if (duration == null) {
