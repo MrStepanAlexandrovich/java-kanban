@@ -31,21 +31,12 @@ public class HttpTaskServer {
 
     public HttpTaskServer(TaskManager taskManager) {
         this.taskManager = taskManager;
-    }
-
-    {
         gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .registerTypeAdapter(Duration.class, new DurationTypeAdapter())
                 .serializeNulls()
                 .setPrettyPrinting()
                 .create();
-       taskManager.addTask(new Task("asdfasdf", "description", Status.IN_PROGRESS, LocalDateTime.of(2020,
-               11, 20, 20, 59), Duration.ofMinutes(59)));
-        taskManager.addTask(new Task("asdfasdf2", "description", Status.IN_PROGRESS));
-       int epicId = taskManager.addEpic(new Epic("epic", "description"));
-       taskManager.addSubtask(new Subtask("subtask", "desc", Status.NEW),
-               taskManager.getEpic(epicId));
     }
 
     public static void main(String[] args) {
@@ -56,18 +47,17 @@ public class HttpTaskServer {
     }
 
     public void start() {
-        HttpServer httpServer;
         try {
             httpServer = HttpServer.create();
             httpServer.bind(new InetSocketAddress(PORT), 0);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        httpServer.createContext("/tasks", new TasksHandler());
-        httpServer.createContext("/subtasks", new SubtasksHandler());
-        httpServer.createContext("/epics", new EpicsHandler());
-        httpServer.createContext("/history", new HistoryHandler());
-        httpServer.createContext("/prioritized", new PrioritizedTasksHandler());
+        httpServer.createContext("/tasks", new TasksHandler(taskManager, gson));
+        httpServer.createContext("/subtasks", new SubtasksHandler(taskManager, gson));
+        httpServer.createContext("/epics", new EpicsHandler(taskManager, gson));
+        httpServer.createContext("/history", new HistoryHandler(taskManager, gson));
+        httpServer.createContext("/prioritized", new PrioritizedTasksHandler(taskManager, gson));
 
         httpServer.start();
     }

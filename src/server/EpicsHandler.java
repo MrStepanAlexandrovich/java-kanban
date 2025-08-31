@@ -17,8 +17,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
-    private TaskManager taskManager = HttpTaskServer.getTaskManager();
-    private Gson gson = HttpTaskServer.getGson();
+    private TaskManager taskManager;
+    private Gson gson;
+
+    public EpicsHandler(TaskManager taskManager, Gson gson) {
+        this.taskManager = taskManager;
+        this.gson = gson;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

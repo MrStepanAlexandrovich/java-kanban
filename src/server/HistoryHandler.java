@@ -10,8 +10,13 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
-    TaskManager taskManager = HttpTaskServer.getTaskManager();
-    Gson gson = HttpTaskServer.getGson();
+    TaskManager taskManager;
+    Gson gson;
+
+    public HistoryHandler(TaskManager taskManager, Gson gson) {
+        this.taskManager = taskManager;
+        this.gson = gson;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

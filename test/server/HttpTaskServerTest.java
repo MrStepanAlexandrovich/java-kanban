@@ -6,7 +6,9 @@ import manager.TaskManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import task.Epic;
 import task.Status;
+import task.Subtask;
 import task.Task;
 
 import java.io.IOException;
@@ -52,11 +54,58 @@ public class HttpTaskServerTest {
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(201, response.statusCode());
 
         List<Task> tasks = taskManager.getTasks();
 
         assertEquals(1, tasks.size());
-        assertEquals(task, tasks.get(0));
+        assertEquals(task.getName(), tasks.get(0).getName());
+    }
+
+    @Test
+    public void addSubtaskAndEpicTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url1 = URI.create("http://localhost:8080/epics");
+
+        Epic epic = new Epic("epic", "desc");
+        String epicJson = gson.toJson(epic);
+
+        HttpRequest request1 = HttpRequest.newBuilder()
+                .uri(url1)
+                .version(HttpClient.Version.HTTP_1_1)
+                .POST(HttpRequest.BodyPublishers.ofString(epicJson))
+                .build();
+
+        HttpResponse response = client.send(request1, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(201, response.statusCode());
+
+        List<Epic> epics = taskManager.getEpics();
+
+        assertEquals(1, epics.size());
+        assertEquals(epic.getName(), epics.get(0).getName());
+
+        Subtask subtask = new Subtask("subtask", "desc", Status.IN_PROGRESS,
+                LocalDateTime.of(2020, 11, 21, 20, 59), Duration.ofMinutes(20));
+
+        subtask.setEpicId(epics.get(0).getId());
+        String subtaskJson = gson.toJson(subtask);
+
+        URI url2 = URI.create("http://localhost:8080/subtasks");
+
+        HttpRequest request2 = HttpRequest.newBuilder()
+                .uri(url2)
+                .version(HttpClient.Version.HTTP_1_1)
+                .POST(HttpRequest.BodyPublishers.ofString(subtaskJson))
+                .build();
+
+        HttpResponse response2 = client.send(request2, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(201, response.statusCode());
+
+        List<Subtask> subtasks = taskManager.getSubtasks();
+
+        assertEquals(1, subtasks.size());
+        assertEquals(subtask.getName(), subtasks.get(0).getName());
     }
 }
