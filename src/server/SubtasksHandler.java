@@ -1,13 +1,18 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 import task.Subtask;
+import task.Task;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
@@ -34,7 +39,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     id = Integer.parseInt(strings[2]);
                 } catch (NumberFormatException e) {
-                    sendNotFound(exchange,"Incorrect subtask ID!");
+                    sendNotFound(exchange,"Incorrect subtask ID!", 404);
                     return;
                 }
 
@@ -47,8 +52,49 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                         os.write(subtaskJson.getBytes());
                     }
                 } else {
-                    sendNotFound(exchange, "Subtask with ID = " + id + " was not found!");
+                    sendNotFound(exchange, "Subtask with ID = " + id + " was not found!", 404);
                 }
+            }
+        } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2     //POST-запросы
+                && strings[1].equals("subtasks")) {
+            InputStream inputStream = exchange.getRequestBody();
+            String requestBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            JsonElement jsonElement = JsonParser.parseString(requestBody);
+
+            if (jsonElement.isJsonObject()) {
+                Subtask subtask = gson.fromJson(requestBody, Subtask.class);
+                boolean taskManagerNotContains = taskManager.getSubtasks()
+                        .stream()
+                        .noneMatch(subtask1 -> subtask1.getId() == subtask.getId());
+                if (!taskManager.findIntersection(subtask)) {
+                    if (taskManagerNotContains || subtask.getId() == null) {
+                        taskManager.addSubtask(subtask, taskManager.getEpic(subtask.getEpicId()));
+                        sendText(exchange, "Subtask has been added!", 201);
+                    } else {
+                        taskManager.updateSubtask(subtask.getId(), subtask);
+                        sendText(exchange, "Subtask has been updated!", 201);
+                    }
+                } else {
+                    sendHasInteractions(exchange, "Interaction was found! Subtask wasn't added!", 406);
+                }
+            }
+        } else if (exchange.getRequestMethod().equals("DELETE") && strings.length == 3 && strings[1].equals("subtasks")) {
+            int id;
+
+            try {
+                id = Integer.parseInt(strings[2]);
+            } catch (NumberFormatException e) {
+                sendNotFound(exchange, "Incorrect task ID!", 404);
+                return;
+            }
+
+            Subtask subtask = taskManager.getSubtask(id);
+
+            if (subtask != null) {
+                taskManager.removeSubtask(subtask.getId());
+                sendText(exchange,"Subtask with ID = " + id + " was removed!", 200);
+            } else {
+                sendText(exchange, "Subtask with ID = " + id + " wasn't found!", 404);
             }
         }
     }

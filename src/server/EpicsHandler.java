@@ -1,13 +1,18 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 import task.Epic;
+import task.Task;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
@@ -34,7 +39,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     id = Integer.parseInt(strings[2]);
                 } catch (NumberFormatException e) {
-                    sendNotFound(exchange, "Incorrect epic ID!");
+                    sendNotFound(exchange, "Incorrect epic ID!", 404);
                     return;
                 }
 
@@ -47,9 +52,51 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                         os.write(epicJson.getBytes());
                     }
                 } else {
-                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!");
+                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!", 404);
                 }
+            }
+        } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2     //POST-запросы
+                && strings[1].equals("epics")) {
+            InputStream inputStream = exchange.getRequestBody();
+            String requestBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            JsonElement jsonElement = JsonParser.parseString(requestBody);
+
+            if (jsonElement.isJsonObject()) {
+                Epic epic = gson.fromJson(requestBody, Epic.class);
+                boolean taskManagerNotContains = taskManager.getEpics()
+                        .stream()
+                        .noneMatch(epic1 -> epic1.getId() == epic.getId());
+                if (!taskManager.findIntersection(epic)) {
+                    if (taskManagerNotContains || epic.getId() == null) {
+                        taskManager.addEpic(epic);
+                        sendText(exchange, "Epic has been added!", 201);
+                    } else {
+                        taskManager.updateEpic(epic.getId(), epic);
+                        sendText(exchange, "Epic has been updated!", 201);
+                    }
+                } else {
+                    sendHasInteractions(exchange, "Interaction was found! Epic wasn't added!", 406);
+                }
+            }
+        } else if (exchange.getRequestMethod().equals("DELETE") && strings.length == 3 && strings[1].equals("epics")) {
+            int id;
+
+            try {
+                id = Integer.parseInt(strings[2]);
+            } catch (NumberFormatException e) {
+                sendNotFound(exchange, "Incorrect epic ID!", 404);
+                return;
+            }
+
+            Epic epic = taskManager.getEpic(id);
+
+            if (epic != null) {
+                taskManager.removeTask(epic.getId());
+                sendText(exchange, "Epic with ID = " + id + " was removed!", 200);
+            } else {
+                sendText(exchange, "Epic with ID = " + id + " wasn't found!", 404);
             }
         }
     }
+}
 }

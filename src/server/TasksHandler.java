@@ -41,7 +41,7 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     id = Integer.parseInt(strings[2]);
                 } catch (NumberFormatException e) {
-                    sendNotFound(exchange, "Incorrect task ID!");
+                    sendNotFound(exchange, "Incorrect task ID!", 404);
                     return;
                 }
 
@@ -54,20 +54,49 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                         os.write(taskJson.getBytes());
                     }
                 } else {
-                    sendNotFound(exchange, "Task with ID = " + id + " was not found!");
+                    sendNotFound(exchange, "Task with ID = " + id + " was not found!", 404);
                 }
             }
-        } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2
-                                && strings[1].equals("tasks")) {
+        } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2     //POST-запросы
+                && strings[1].equals("tasks")) {
             InputStream inputStream = exchange.getRequestBody();
             String requestBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             JsonElement jsonElement = JsonParser.parseString(requestBody);
 
             if (jsonElement.isJsonObject()) {
                 Task task = gson.fromJson(requestBody, Task.class);
-                taskManager.addTask(task);
-                System.out.println("Задача добавлена!");
-                exchange.sendResponseHeaders(200, 0);
+                boolean taskManagerNotContains = taskManager.getTasks()
+                        .stream()
+                        .noneMatch(task1 -> task1.getId() == task.getId());
+                if (!taskManager.findIntersection(task)) {
+                    if (taskManagerNotContains || task.getId() == null) {
+                        taskManager.addTask(task);
+                        sendText(exchange, "Task has been added!", 201);
+                    } else {
+                        taskManager.updateTask(task.getId(), task);
+                        sendText(exchange, "Task has been updated!", 201);
+                    }
+                } else {
+                    sendHasInteractions(exchange, "Interaction was found! Task wasn't added!", 406);
+                }
+            }
+        } else if (exchange.getRequestMethod().equals("DELETE") && strings.length == 3 && strings[1].equals("tasks")) {
+            int id;
+
+            try {
+                id = Integer.parseInt(strings[2]);
+            } catch (NumberFormatException e) {
+                sendNotFound(exchange, "Incorrect task ID!", 404);
+                return;
+            }
+
+            Task task = taskManager.getTask(id);
+
+            if (task != null) {
+                taskManager.removeTask(task.getId());
+                sendText(exchange,"Task with ID = " + id + " was removed!", 200);
+            } else {
+                sendText(exchange, "Task with ID = " + id + " wasn't found!", 404);
             }
         }
     }

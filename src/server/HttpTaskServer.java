@@ -111,10 +111,11 @@ public class HttpTaskServer {
 
         @Override
         public Duration read(JsonReader jsonReader) throws IOException {
-            if (jsonReader.nextString().equals("null")) {
+            String durationStr = jsonReader.nextString();
+            if (durationStr.equals("null")) {
                 return null;
             } else {
-                return Duration.ofMinutes(jsonReader.nextLong());
+                return Duration.ofMinutes(Long.valueOf(durationStr));
             }
         }
     }
