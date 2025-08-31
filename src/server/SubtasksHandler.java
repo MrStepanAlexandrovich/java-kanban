@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
+import task.Epic;
 import task.Subtask;
 import task.Task;
 
@@ -68,8 +69,16 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                         .noneMatch(subtask1 -> subtask1.getId() == subtask.getId());
                 if (!taskManager.findIntersection(subtask)) {
                     if (taskManagerNotContains || subtask.getId() == null) {
-                        taskManager.addSubtask(subtask, taskManager.getEpic(subtask.getEpicId()));
-                        sendText(exchange, "Subtask has been added!", 201);
+                        Epic epic = taskManager.getEpic(subtask.getEpicId());
+                        if (epic != null) {
+                            taskManager.addSubtask(subtask, taskManager.getEpic(subtask.getEpicId()));
+                            sendText(exchange, "Subtask has been added!", 201);
+                        } else {
+                            sendText(exchange, "Epic with ID = " + subtask.getEpicId() + " wasn't found! " +
+                                            "Subtask cannot be created without epic!",
+                                    201);
+                        }
+
                     } else {
                         taskManager.updateSubtask(subtask.getId(), subtask);
                         sendText(exchange, "Subtask has been updated!", 201);

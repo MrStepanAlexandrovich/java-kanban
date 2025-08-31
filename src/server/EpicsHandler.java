@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 import task.Epic;
+import task.Subtask;
 import task.Task;
 
 import java.io.IOException;
@@ -54,6 +55,28 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 } else {
                     sendNotFound(exchange, "Epic with ID = " + id + " was not found!", 404);
                 }
+            } else if (strings[1].equals("epics") && strings.length == 4 && strings[3].equals("subtasks")) {
+                int id;
+
+                try {
+                    id = Integer.parseInt(strings[2]);
+                } catch (NumberFormatException e) {
+                    sendNotFound(exchange, "Incorrect epic ID!", 404);
+                    return;
+                }
+
+                Epic epic = taskManager.getEpic(id);
+                if (epic != null) {
+                    List<Subtask> subtasks = epic.getSubtasks();
+                    String epicJson = gson.toJson(subtasks);
+
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        exchange.sendResponseHeaders(200, epicJson.length());
+                        os.write(epicJson.getBytes());
+                    }
+                } else {
+                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!", 404);
+                }
             }
         } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2     //POST-запросы
                 && strings[1].equals("epics")) {
@@ -63,9 +86,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
 
             if (jsonElement.isJsonObject()) {
                 Epic epic = gson.fromJson(requestBody, Epic.class);
-                boolean taskManagerNotContains = taskManager.getEpics()
-                        .stream()
-                        .noneMatch(epic1 -> epic1.getId() == epic.getId());
+                boolean taskManagerNotContains = taskManager.getEpics().stream().noneMatch(epic1 -> epic1.getId() == epic.getId());
                 if (!taskManager.findIntersection(epic)) {
                     if (taskManagerNotContains || epic.getId() == null) {
                         taskManager.addEpic(epic);
@@ -91,12 +112,11 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             Epic epic = taskManager.getEpic(id);
 
             if (epic != null) {
-                taskManager.removeTask(epic.getId());
+                taskManager.removeEpic(epic.getId());
                 sendText(exchange, "Epic with ID = " + id + " was removed!", 200);
             } else {
                 sendText(exchange, "Epic with ID = " + id + " wasn't found!", 404);
             }
         }
     }
-}
 }
