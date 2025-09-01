@@ -74,7 +74,15 @@ public class HttpTaskServer {
         return gson;
     }
 
-    class TaskListTypeToken extends TypeToken<List<Task>> {
+    static class TaskListTypeToken extends TypeToken<List<Task>> {
+
+    }
+
+    static class SubtaskListTypeToken extends TypeToken<List<Subtask>> {
+
+    }
+
+    static class EpicsListTypeToken extends TypeToken<List<Epic>> {
 
     }
 

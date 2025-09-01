@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.Status;
 import task.Subtask;
-import task.Task;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,7 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class HttpTaskServerTest {
+public class SubtasksEndpointsTest {
     TaskManager taskManager = new InMemoryTaskManager();
     HttpTaskServer server = new HttpTaskServer(taskManager);
     Gson gson = server.getGson();
@@ -36,31 +35,6 @@ public class HttpTaskServerTest {
     @AfterEach
     public void afterEach() {
         server.stop();
-    }
-
-    @Test
-    public void addTaskTest() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
-
-        Task task = new Task("task", "desc", Status.NEW, LocalDateTime.now(),
-                Duration.ofMinutes(50));
-        String taskJson = gson.toJson(task);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
-                .version(HttpClient.Version.HTTP_1_1)
-                .POST(HttpRequest.BodyPublishers.ofString(taskJson))
-                .build();
-
-        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(201, response.statusCode());
-
-        List<Task> tasks = taskManager.getTasks();
-
-        assertEquals(1, tasks.size());
-        assertEquals(task.getName(), tasks.get(0).getName());
     }
 
     @Test
@@ -110,52 +84,13 @@ public class HttpTaskServerTest {
         assertEquals(subtask.getName(), subtasks.get(0).getName());
     }
 
-    @Test
-    public void deleteTaskTest() throws IOException, InterruptedException {
-        int taskId = taskManager.addTask(new Task("task", "desc", Status.IN_PROGRESS));
-
-        HttpClient client = HttpClient.newHttpClient();
-        URI url1 = URI.create("http://localhost:8080/tasks/" + taskId);
-
-        HttpRequest request1 = HttpRequest.newBuilder()
-                .uri(url1)
-                .version(HttpClient.Version.HTTP_1_1)
-                .DELETE()
-                .build();
-
-        HttpResponse response = client.send(request1, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(200, response.statusCode());
-
-        assertNull(taskManager.getTask(taskId));
-    }
-
-    @Test
-    public void deleteEpic() throws IOException, InterruptedException {
-        int epicId = taskManager.addEpic(new Epic("epic", "desc"));
-
-        HttpClient client = HttpClient.newHttpClient();
-        URI url1 = URI.create("http://localhost:8080/epics/" + epicId);
-
-        HttpRequest request1 = HttpRequest.newBuilder()
-                .uri(url1)
-                .version(HttpClient.Version.HTTP_1_1)
-                .DELETE()
-                .build();
-
-        HttpResponse response = client.send(request1, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(200, response.statusCode());
-
-        assertNull(taskManager.getTask(epicId));
-    }
 
     @Test
     public void deleteSubtask() throws IOException, InterruptedException {
         Epic epic = new Epic("epic", "desc");
         int epicId = taskManager.addEpic(epic);
         int subtaskId = taskManager.addSubtask(new Subtask("subtask", "desc", Status.IN_PROGRESS,
-                LocalDateTime.of(2000, 11, 21, 20, 59), Duration.ofMinutes(29)),
+                        LocalDateTime.of(2000, 11, 21, 20, 59), Duration.ofMinutes(29)),
                 epic);
 
         HttpClient client = HttpClient.newHttpClient();
@@ -175,33 +110,89 @@ public class HttpTaskServerTest {
     }
 
     @Test
-    public void updateTask() throws IOException, InterruptedException {
+    public void updateSubtask() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
+        URI url = URI.create("http://localhost:8080/subtasks");
 
-        Task task = new Task("task", "desc", Status.NEW,
-                LocalDateTime.of(2020, 11, 20, 19, 1), Duration.ofMinutes(50));
-        int taskId = taskManager.addTask(task);
+        Epic epic = new Epic("epic", "desc");
+        int epicId = taskManager.addEpic(epic);
+        int subtaskId = taskManager.addSubtask(new Subtask("subtask", "desc", Status.IN_PROGRESS,
+                        LocalDateTime.of(2000, 11, 21, 20, 59), Duration.ofMinutes(29)),
+                epic);
 
-        Task newTask = new Task("NEW", "desc", Status.NEW,
-                LocalDateTime.of(2019, 11, 20, 19, 1), Duration.ofMinutes(132));
-        newTask.setId(taskId);
+        Subtask newSubtask = new Subtask("NEW_SUBTASK", "desc", Status.NEW,
+                LocalDateTime.of(2020, 11, 21, 17, 50), Duration.ofMinutes(20));
+        newSubtask.setId(subtaskId);
 
-        String newTaskJson = gson.toJson(newTask);
+        String newSubtaskJson = gson.toJson(newSubtask);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .version(HttpClient.Version.HTTP_1_1)
-                .POST(HttpRequest.BodyPublishers.ofString(newTaskJson))
+                .POST(HttpRequest.BodyPublishers.ofString(newSubtaskJson))
                 .build();
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(201, response.statusCode());
 
-        List<Task> tasks = taskManager.getTasks();
+        List<Subtask> subtasks = taskManager.getSubtasks();
 
-        assertEquals(1, tasks.size());
-        assertEquals(taskManager.getTask(taskId), newTask);
+        assertEquals(1, subtasks.size());
+        assertEquals(taskManager.getSubtask(subtaskId), newSubtask);
+    }
+
+    @Test
+    public void getSubtaskById() throws IOException, InterruptedException {
+        Epic epic = new Epic("epic", "description");
+        Subtask subtask = new Subtask("subtask", "description", Status.NEW,
+                LocalDateTime.of(2020, 11, 21, 20, 59), Duration.ofMinutes(70));
+        int subtaskId = taskManager.addSubtask(subtask, epic);
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/subtasks/" + subtaskId);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET()
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        String body = (String) response.body();
+
+        Subtask subtaskFromJson = gson.fromJson(body, Subtask.class);
+
+        assertEquals(subtask, subtaskFromJson);
+    }
+
+    @Test
+    public void getSubtasks() throws IOException, InterruptedException {
+        Epic epic = new Epic("epic", "desc");
+        taskManager.addEpic(epic);
+
+        Subtask subtask1 = new Subtask("subtask1", "desc", Status.NEW,
+                LocalDateTime.of(2000, 1, 2, 2, 46), Duration.ofMinutes(20));
+        Subtask subtask2 = new Subtask("subtask2", "desc", Status.NEW,
+                LocalDateTime.of(2001, 1, 2, 2, 46), Duration.ofMinutes(20));
+        Subtask subtask3 = new Subtask("subtask3", "desc", Status.NEW,
+                LocalDateTime.of(2002, 1, 2, 2, 46), Duration.ofMinutes(20));
+
+        taskManager.addSubtask(subtask1, epic);
+        taskManager.addSubtask(subtask2, epic);
+        taskManager.addSubtask(subtask3, epic);
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/subtasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET()
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        String body = (String) response.body();
+
+        List<Subtask> subtasks = gson.fromJson(body, new HttpTaskServer.SubtaskListTypeToken());
+        assertEquals(taskManager.getSubtasks(), subtasks);
     }
 }
