@@ -21,7 +21,7 @@ import java.util.List;
 public class HttpTaskServer {
     private HttpServer httpServer;
     private TaskManager taskManager;
-    private final int PORT = 8080;
+    private final int port = 8080;
     private Gson gson;
 
     public HttpTaskServer(TaskManager taskManager) {
@@ -44,7 +44,7 @@ public class HttpTaskServer {
     public void start() {
         try {
             httpServer = HttpServer.create();
-            httpServer.bind(new InetSocketAddress(PORT), 0);
+            httpServer.bind(new InetSocketAddress(port), 0);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -86,7 +86,7 @@ public class HttpTaskServer {
 
         @Override
         public void write(JsonWriter jsonWriter, LocalDateTime localDateTime) throws IOException {
-             if (localDateTime == null) {
+            if (localDateTime == null) {
                 jsonWriter.value("null");
             } else {
                 jsonWriter.value(dateTimeFormatter.format(localDateTime));
