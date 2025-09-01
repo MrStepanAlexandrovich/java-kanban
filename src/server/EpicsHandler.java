@@ -8,7 +8,6 @@ import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 import task.Epic;
 import task.Subtask;
-import task.Task;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,17 +34,15 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 List<Epic> epics = taskManager.getEpics();
                 String epicsJson = gson.toJson(epics);
                 exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-                exchange.sendResponseHeaders(200, epicsJson.length());
-                try (OutputStream os = exchange.getResponseBody()) {
-                    os.write(epicsJson.getBytes());
-                }
+                sendCorrectRequest(exchange, epicsJson);
+
             } else if (strings[1].equals("epics") && strings.length == 3) {
                 int id;
 
                 try {
                     id = Integer.parseInt(strings[2]);
                 } catch (NumberFormatException e) {
-                    sendNotFound(exchange, "Incorrect epic ID!", 404);
+                    sendNotFound(exchange, "Incorrect epic ID!");
                     return;
                 }
 
@@ -54,11 +51,10 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                     String epicJson = gson.toJson(epic);
 
                     try (OutputStream os = exchange.getResponseBody()) {
-                        exchange.sendResponseHeaders(200, epicJson.length());
-                        os.write(epicJson.getBytes());
+                        sendCorrectRequest(exchange, epicJson);
                     }
                 } else {
-                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!", 404);
+                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!");
                 }
             } else if (strings[1].equals("epics") && strings.length == 4 && strings[3].equals("subtasks")) {
                 int id;
@@ -66,7 +62,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     id = Integer.parseInt(strings[2]);
                 } catch (NumberFormatException e) {
-                    sendNotFound(exchange, "Incorrect epic ID!", 404);
+                    sendNotFound(exchange, "Incorrect epic ID!");
                     return;
                 }
 
@@ -76,11 +72,10 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                     String epicJson = gson.toJson(subtasks);
 
                     try (OutputStream os = exchange.getResponseBody()) {
-                        exchange.sendResponseHeaders(200, epicJson.length());
-                        os.write(epicJson.getBytes());
+                        sendCorrectRequest(exchange, epicJson);
                     }
                 } else {
-                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!", 404);
+                    sendNotFound(exchange, "Epic with ID = " + id + " was not found!");
                 }
             }
         } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2     //POST-запросы
@@ -95,13 +90,13 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 if (!taskManager.findIntersection(epic)) {
                     if (taskManagerNotContains || epic.getId() == null) {
                         taskManager.addEpic(epic);
-                        sendText(exchange, "Epic has been added!", 201);
+                        sendSuccessfullyCreated(exchange, "Epic has been added!");
                     } else {
                         taskManager.updateEpic(epic.getId(), epic);
-                        sendText(exchange, "Epic has been updated!", 201);
+                        sendSuccessfullyCreated(exchange, "Epic has been updated!");
                     }
                 } else {
-                    sendHasInteractions(exchange, "Interaction was found! Epic wasn't added!", 406);
+                    sendHasInteractions(exchange, "Interaction was found! Epic wasn't added!");
                 }
             }
         } else if (exchange.getRequestMethod().equals("DELETE") && strings.length == 3 && strings[1].equals("epics")) {
@@ -110,7 +105,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             try {
                 id = Integer.parseInt(strings[2]);
             } catch (NumberFormatException e) {
-                sendNotFound(exchange, "Incorrect epic ID!", 404);
+                sendNotFound(exchange, "Incorrect epic ID!");
                 return;
             }
 
@@ -118,9 +113,9 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
 
             if (epic != null) {
                 taskManager.removeEpic(epic.getId());
-                sendText(exchange, "Epic with ID = " + id + " was removed!", 200);
+                sendCorrectRequest(exchange, "Epic with ID = " + id + " was removed!");
             } else {
-                sendText(exchange, "Epic with ID = " + id + " wasn't found!", 404);
+                sendNotFound(exchange, "Epic with ID = " + id + " wasn't found!");
             }
         }
     }

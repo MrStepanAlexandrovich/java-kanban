@@ -6,8 +6,6 @@ import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
     TaskManager taskManager;
@@ -25,10 +23,7 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
 
         if (exchange.getRequestMethod().equals("GET") && strings.length == 2) {
             String history = gson.toJson(taskManager.getHistory());
-            OutputStream os = exchange.getResponseBody();
-            exchange.sendResponseHeaders(200, history.length());
-            os.write(history.getBytes(StandardCharsets.UTF_8));
-            os.close();
+            sendCorrectRequest(exchange, history);
         }
     }
 }

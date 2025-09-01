@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.Status;
 import task.Subtask;
-import task.Task;
 
 import java.io.IOException;
 import java.net.URI;
@@ -178,5 +177,33 @@ public class EpicsEndpointsTest {
         List<Subtask> subtasks = gson.fromJson(body, new HttpTaskServer.SubtaskListTypeToken());
 
         assertEquals(taskManager.getSubtasks(), subtasks);
+    }
+
+    @Test
+    public void epicShouldNotBeFound404() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/epics/1");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET()
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(404, response.statusCode());
+    }
+
+    @Test
+    public void subtasksOfEpicShouldNotBeFound404() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/epics/1/subtasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET()
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(404, response.statusCode());
     }
 }

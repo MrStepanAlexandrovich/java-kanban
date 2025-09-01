@@ -6,8 +6,6 @@ import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class PrioritizedTasksHandler extends BaseHttpHandler implements HttpHandler {
     TaskManager taskManager;
@@ -25,10 +23,7 @@ public class PrioritizedTasksHandler extends BaseHttpHandler implements HttpHand
 
         if (exchange.getRequestMethod().equals("GET") && strings.length == 2) {
             String prioritizedTasks = gson.toJson(taskManager.getPrioritizedTasks());
-            OutputStream os = exchange.getResponseBody();
-            exchange.sendResponseHeaders(200, prioritizedTasks.length());
-            os.write(prioritizedTasks.getBytes(StandardCharsets.UTF_8));
-            os.close();
+            sendCorrectRequest(exchange, prioritizedTasks);
         }
     }
 }

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.Status;
 import task.Subtask;
+import task.Task;
 
 import java.io.IOException;
 import java.net.URI;
@@ -194,5 +195,46 @@ public class SubtasksEndpointsTest {
 
         List<Subtask> subtasks = gson.fromJson(body, new HttpTaskServer.SubtaskListTypeToken());
         assertEquals(taskManager.getSubtasks(), subtasks);
+    }
+
+    @Test
+    public void subtaskShouldNotBeFound404() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/subtasks/1");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET()
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(404, response.statusCode());
+    }
+
+    @Test
+    public void intersectionShouldBeFoundWhenAddingSubtask406() throws IOException, InterruptedException {
+        Task task = new Task("task", "descr", Status.NEW,
+                LocalDateTime.of(2020, 11, 1, 10, 20), Duration.ofMinutes(21));
+        taskManager.addTask(task);
+        Epic epic = new Epic("epic", "d");
+        int epicId = taskManager.addEpic(epic);
+
+        Subtask subtask = new Subtask("f", "s", Status.NEW,
+                LocalDateTime.of(2020, 11, 1, 10, 25), Duration.ofMinutes(20));
+
+        subtask.setEpicId(epicId);
+
+        String subtaskJson = gson.toJson(subtask);
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/subtasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .POST(HttpRequest.BodyPublishers.ofString(subtaskJson))
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(406, response.statusCode());
     }
 }

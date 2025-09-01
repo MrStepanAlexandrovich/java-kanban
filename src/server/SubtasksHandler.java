@@ -34,18 +34,15 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
             if (strings[1].equals("subtasks") && strings.length == 2) {
                 List<Subtask> subtasks = taskManager.getSubtasks();
                 String subtasksJson = gson.toJson(subtasks);
-                exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-                exchange.sendResponseHeaders(200, subtasksJson.length());
-                try (OutputStream os = exchange.getResponseBody()) {
-                    os.write(subtasksJson.getBytes());
-                }
+                sendCorrectRequest(exchange, subtasksJson);
+
             } else if (strings[1].equals("subtasks") && strings.length == 3) {
                 int id;
 
                 try {
                     id = Integer.parseInt(strings[2]);
                 } catch (NumberFormatException e) {
-                    sendNotFound(exchange,"Incorrect subtask ID!", 404);
+                    sendNotFound(exchange,"Incorrect subtask ID!");
                     return;
                 }
 
@@ -53,12 +50,9 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                 if (subtask != null) {
                     String subtaskJson = gson.toJson(subtask);
 
-                    try (OutputStream os = exchange.getResponseBody()) {
-                        exchange.sendResponseHeaders(200, subtaskJson.length());
-                        os.write(subtaskJson.getBytes());
-                    }
+                    sendCorrectRequest(exchange, subtaskJson);
                 } else {
-                    sendNotFound(exchange, "Subtask with ID = " + id + " was not found!", 404);
+                    sendNotFound(exchange, "Subtask with ID = " + id + " was not found!");
                 }
             }
         } else if (exchange.getRequestMethod().equals("POST") && strings.length == 2     //POST-запросы
@@ -77,28 +71,28 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                         Epic epic = taskManager.getEpic(subtask.getEpicId());
                         if (epic != null) {
                             taskManager.addSubtask(subtask, taskManager.getEpic(subtask.getEpicId()));
-                            sendText(exchange, "Subtask has been added!", 201);
+                            sendSuccessfullyCreated(exchange, "Subtask has been added!");
                         } else {
-                            sendText(exchange, "Epic with ID = " + subtask.getEpicId() + " wasn't found! " +
-                                            "Subtask cannot be created without epic!",
-                                    201);
+                            sendNotFound(exchange, "Epic with ID = " + subtask.getEpicId() +
+                                    " wasn't found! Subtask cannot be created without epic!");
                         }
 
                     } else {
                         taskManager.updateSubtask(subtask.getId(), subtask);
-                        sendText(exchange, "Subtask has been updated!", 201);
+                        sendSuccessfullyCreated(exchange, "Subtask has been updated!");
                     }
                 } else {
-                    sendHasInteractions(exchange, "Interaction was found! Subtask wasn't added!", 406);
+                    sendHasInteractions(exchange, "Interaction was found! Subtask wasn't added!");
                 }
             }
-        } else if (exchange.getRequestMethod().equals("DELETE") && strings.length == 3 && strings[1].equals("subtasks")) {
+        } else if (exchange.getRequestMethod().equals("DELETE") && strings.length == 3 &&
+                strings[1].equals("subtasks")) {
             int id;
 
             try {
                 id = Integer.parseInt(strings[2]);
             } catch (NumberFormatException e) {
-                sendNotFound(exchange, "Incorrect task ID!", 404);
+                sendNotFound(exchange, "Incorrect task ID!");
                 return;
             }
 
@@ -106,9 +100,9 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
 
             if (subtask != null) {
                 taskManager.removeSubtask(subtask.getId());
-                sendText(exchange,"Subtask with ID = " + id + " was removed!", 200);
+                sendCorrectRequest(exchange,"Subtask with ID = " + id + " was removed!");
             } else {
-                sendText(exchange, "Subtask with ID = " + id + " wasn't found!", 404);
+                sendNotFound(exchange, "Subtask with ID = " + id + " wasn't found!");
             }
         }
     }

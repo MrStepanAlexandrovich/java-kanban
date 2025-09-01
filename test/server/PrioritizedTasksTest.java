@@ -63,4 +63,18 @@ public class PrioritizedTasksTest {
 
         assertEquals(taskManager.getPrioritizedTasks(), prioritized);
     }
+
+    @Test
+    public void taskShouldNotBeFound404() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/1");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET()
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(404, response.statusCode());
+    }
 }

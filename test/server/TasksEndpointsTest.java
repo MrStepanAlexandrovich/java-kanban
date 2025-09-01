@@ -163,4 +163,27 @@ public class TasksEndpointsTest {
 
         assertEquals(taskManager.getTasks(), tasks);
     }
+
+    @Test
+    public void intersectionShouldBeFoundWhenAddingTask406() throws IOException, InterruptedException {
+        Task task1 = new Task("task", "descr", Status.NEW,
+                LocalDateTime.of(2020, 11, 1, 10, 20), Duration.ofMinutes(21));
+        taskManager.addTask(task1);
+
+        Task task2 = new Task("task", "descr", Status.NEW,
+                LocalDateTime.of(2020, 11, 1, 10, 30), Duration.ofMinutes(21));
+
+        String task2Json = gson.toJson(task2);
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .version(HttpClient.Version.HTTP_1_1)
+                .POST(HttpRequest.BodyPublishers.ofString(task2Json))
+                .build();
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(406, response.statusCode());
+    }
 }
