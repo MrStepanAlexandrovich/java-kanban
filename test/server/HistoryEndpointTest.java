@@ -21,9 +21,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HistoryEndpointTest {
-    TaskManager taskManager = new InMemoryTaskManager();
-    HttpTaskServer server = new HttpTaskServer(taskManager);
-    Gson gson = server.getGson();
+    private TaskManager taskManager = new InMemoryTaskManager();
+    private HttpTaskServer server = new HttpTaskServer(taskManager);
+    private Gson gson = server.getGson();
 
     @BeforeEach
     public void setUp() {
