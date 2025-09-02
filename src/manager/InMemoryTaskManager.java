@@ -117,13 +117,6 @@ public class InMemoryTaskManager implements TaskManager {
                 epic.setId(counter);
             }
 
-            List<Subtask> newSubtasks = epic.getSubtasks();
-            for (Subtask subtask : newSubtasks) {
-                subtask.setId(++counter);
-                subtasks.put(counter, subtask);    //добавляем сабтаски в список в TaskManager
-            }
-            refreshStatus(epic);
-
             return epic.getId();
         } else {
             System.out.println("Эпик не был добавлен!");
@@ -179,8 +172,7 @@ public class InMemoryTaskManager implements TaskManager {
                 epics.replace(id, epic);
 
                 epic.setId(id);
-                refreshStatus(epic);
-                epic.refreshTime();
+
                 historyManager.remove(id);
                 historyManager.add(epic);
 
@@ -246,7 +238,8 @@ public class InMemoryTaskManager implements TaskManager {
                 subtasks.put(++counter, subtask);
                 subtask.setId(counter);
 
-                subtask.setEpic(epic);
+                epic.addSubtask(subtask);
+                subtask.setEpicId(epic.getId());
                 refreshStatus(epic);
                 epic.refreshTime();
 
@@ -264,7 +257,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeSubtask(int id) {
         if (subtasks.containsKey(id)) {
             Subtask subtask = subtasks.get(id);
-            Epic epic = subtask.getEpic();
+            Epic epic = epics.get(subtask.getEpicId());
 
             epic.getSubtasks().remove(subtask); //Удаляем из эпика
             epic.refreshTime();

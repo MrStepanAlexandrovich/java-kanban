@@ -38,7 +38,7 @@ public class InMemoryHistoryManagerTest {
     public void getHistoryShouldReturnListOfTasks() {
         int idEpic = taskManager.addEpic(new Epic("adsf", null));
         int idTask = taskManager.addTask(new Task("adsfzcx", null, Status.NEW));
-        int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW, null),
+        int idSubtask = taskManager.addSubtask(new Subtask("sadfas", null, Status.NEW),
                 taskManager.getEpic(idEpic));
 
         Epic epic = taskManager.getEpic(idEpic);
@@ -65,10 +65,14 @@ public class InMemoryHistoryManagerTest {
     @Test
     public void epicInHistoryManagerAndTheSameEpicInTaskManagerShouldBeEqual() {
         Epic epic = new Epic("Поехать в другой город", null);
-        taskManager.addEpic(epic);
-        Subtask subtask1 = new Subtask("Собрать вещи", null, Status.NEW, epic);
-        Subtask subtask2 = new Subtask("Прибраться", null, Status.NEW, epic);
-        Subtask subtask3 = new Subtask("Умыться", null, Status.NEW, epic);
+        int epicId = taskManager.addEpic(epic);
+        Subtask subtask1 = new Subtask("Собрать вещи", null, Status.NEW);
+        Subtask subtask2 = new Subtask("Прибраться", null, Status.NEW);
+        Subtask subtask3 = new Subtask("Умыться", null, Status.NEW);
+
+        taskManager.addSubtask(subtask1, epic);
+        taskManager.addSubtask(subtask2, epic);
+        taskManager.addSubtask(subtask3, epic);
 
         Epic epicFromTaskManager = taskManager.getEpic(epic.getId());
         List<Task> history = taskManager.getHistory();

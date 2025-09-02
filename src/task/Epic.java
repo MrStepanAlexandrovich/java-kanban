@@ -20,6 +20,9 @@ public class Epic extends Task {
     public void addSubtask(Subtask subtask) {
         if (!subtasks.contains(subtask)) {
             subtasks.add(subtask);
+            calculateDuration();
+            findStartTime();
+            findEndTime();
             refreshTime();
         }
     }
@@ -77,7 +80,7 @@ public class Epic extends Task {
     }
 
     private void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
+         this.endTime = endTime;
     }
 
     @Override

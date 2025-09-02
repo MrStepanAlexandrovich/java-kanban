@@ -5,34 +5,25 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Subtask extends Task {
-    private Epic epic;
+    private Integer epicId;
 
-    public Subtask(String name, String description, Status status, Epic epic, LocalDateTime startTime,
+    public Subtask(String name, String description, Status status, LocalDateTime startTime,
                    Duration duration) {
         super(name, description, status, startTime, duration);
-        if (epic != null) {
-            this.epic = epic;
-            epic.addSubtask(this);
-        }
         setType(Type.SUBTASK);
     }
 
-    public Subtask(String name, String description, Status status, Epic epic) {
+    public Subtask(String name, String description, Status status) {
         super(name, description, status);
-        if (epic != null) {
-            epic.addSubtask(this);
-            this.epic = epic;
-        }
         setType(Type.SUBTASK);
     }
 
-    public void setEpic(Epic epic) {
-        this.epic = epic;
-        epic.addSubtask(this);
+    public void setEpicId(Integer epicId) {
+        this.epicId = epicId;
     }
 
-    public Epic getEpic() {
-        return epic;
+    public Integer getEpicId() {
+        return epicId;
     }
 
     @Override
@@ -40,11 +31,11 @@ public class Subtask extends Task {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Subtask subtask = (Subtask) o;
-        return Objects.equals(epic.getId(), subtask.epic.getId());
+        return Objects.equals(epicId, subtask.epicId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), epic);
+        return Objects.hash(super.hashCode(), epicId);
     }
 }
